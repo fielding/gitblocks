@@ -16,12 +16,53 @@ const shade=c=>({t:mixhex(c,'#ffffff',.30),l:mixhex(c,'#000000',.06),r:mixhex(c,
 
 /* every animation in the series; `on` is decided per page from VIZ.meta.name */
 const SERIES=[
-  {name:'rebase',       file:'rebase.html',       fam:'rose'},
-  {name:'merge',        file:'merge.html',        fam:'sage'},
-  {name:'cherry-pick',  file:'cherry-pick.html',  fam:'peach'},
-  {name:'reset',        file:'reset.html',        fam:'amber'},
-  {name:'fast-forward', file:'fast-forward.html', fam:'blue'},
+  {name:'rebase',       file:'rebase.html',       fam:'rose',  doc:'Rebase, Replayed'},
+  {name:'merge',        file:'merge.html',        fam:'sage',  doc:'Merge, Two Parents'},
+  {name:'cherry-pick',  file:'cherry-pick.html',  fam:'peach', doc:'Cherry-Pick, One Commit'},
+  {name:'reset',        file:'reset.html',        fam:'amber', doc:'Reset, Rewound'},
+  {name:'fast-forward', file:'fast-forward.html', fam:'blue',  doc:'Fast-Forward, Just a Pointer'},
 ];
+
+/* ---- client-side switching between animations ----
+   Chip clicks re-boot the engine in place with the target's data (fetched
+   once, ~5KB) instead of a full page navigation. Direct URLs, embeds, and
+   file:// (where fetch is unavailable → normal navigation) all still work. */
+const VIZ_REG={};
+let bootGen=0, bootAC=null, loadChain=Promise.resolve();
+function loadVizData(name){
+  if(VIZ_REG[name])return Promise.resolve(VIZ_REG[name]);
+  // serialize loads: each data file assigns window.VIZ, so evals must not interleave
+  loadChain=loadChain.then(async()=>{
+    if(VIZ_REG[name])return;
+    const res=await fetch('vizzes/'+name+'.js');
+    if(!res.ok)throw new Error('fetch '+name);
+    (0,eval)(await res.text());
+    VIZ_REG[name]=window.VIZ;
+  });
+  return loadChain.then(()=>VIZ_REG[name]);
+}
+async function switchViz(name,href,push){
+  try{
+    const data=await loadVizData(name);
+    const u=new URL(href,location.href);
+    // if this host serves clean URLs (we weren't loaded via .html), push the clean form
+    if(!/\.html$/.test(location.pathname))u.pathname=u.pathname.replace(/\.html$/,'');
+    if(push!==false)history.pushState({viz:name},'',u);
+    const s=SERIES.find(x=>x.name===name);
+    if(s&&s.doc)document.title=s.doc;
+    window.scrollTo(0,0);
+    boot(data);
+  }catch(e){location.href=href;}
+}
+window.addEventListener('popstate',()=>{
+  const base=(location.pathname.split('/').pop()||'').replace(/\.html$/,'')||'rebase';
+  const name=SERIES.some(s=>s.name===base)?base:null;
+  if(name&&VIZ_REG[name]){
+    const s=SERIES.find(x=>x.name===name);
+    if(s&&s.doc)document.title=s.doc;
+    boot(VIZ_REG[name]);
+  }else location.reload();
+});
 
 const W=2, D=2, H=72, TW=72, TH=36, NS='http://www.w3.org/2000/svg';
 const pts=a=>a.map(p=>p.join(',')).join(' ');
@@ -65,6 +106,11 @@ function skeleton(meta){
 }
 
 function boot(VIZ){
+const gen=++bootGen;
+if(bootAC)bootAC.abort();
+bootAC=new AbortController();
+const SIG=bootAC.signal;
+VIZ_REG[VIZ.meta.name]=VIZ;
 const C=VIZ.commits, STEPS=VIZ.steps, BRANCHES=VIZ.branches||['main','feature'];
 const blockColor=n=>FAM[n.fam||'paper'];
 const parentsOf=n=>[n.parent,n.parent2].filter(Boolean);
@@ -461,7 +507,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='r'){e.preventDefault();replayStep();}
   else if(e.key===' '){e.preventDefault();document.getElementById('btnAuto').click();}
   else if(e.key==='Escape'){select(null);}
-});
+},{signal:SIG});
 
 /* ================= CAMERA ================= */
 let camTween=null;
@@ -506,7 +552,7 @@ svg.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x
 svg.addEventListener('pointerup',()=>{if(drag&&!drag.moved)select(null);drag=null;svg.classList.remove('dragging');});
 document.getElementById('zin').onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1.2,r.width/2,r.height/2);};
 document.getElementById('zout').onclick=()=>{const r=svg.getBoundingClientRect();zoomAt(1/1.2,r.width/2,r.height/2);};
-window.addEventListener('resize',()=>fitView(false));
+window.addEventListener('resize',()=>fitView(false),{signal:SIG});
 
 /* ================= TIP ================= */
 function showTip(e,text){tip.style.display='block';tip.textContent=text;moveTip(e);}
@@ -516,6 +562,7 @@ function hideTip(){tip.style.display='none';}
 /* ================= LOOP ================= */
 let lastActive=true;
 function tick(){
+  if(gen!==bootGen)return; // a newer boot owns the page now
   camTick();
   const st=STEPS[S.i], dur=stepDur(st);
   const active=tSec()<dur+.05;
@@ -530,10 +577,24 @@ function tick(){
 /* ================= LEGEND + ANIMATION LIST ================= */
 document.getElementById('legend').innerHTML=(VIZ.legend||[])
   .map(([fam,l])=>`<span class="li">${cubeSvg(FAM[fam]||fam)}<span>${l}</span></span>`).join('');
-document.getElementById('vizrow').innerHTML=SERIES.map(v=>{
+const vizrow=document.getElementById('vizrow');
+vizrow.innerHTML=SERIES.map(v=>{
   const on=v.name===VIZ.meta.name;
-  return `<a class="nv${on?' on':''}" href="${v.file}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
+  return `<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
 }).join('');
+if(location.protocol!=='file:'){
+  // switch client-side: re-boot with the target's data instead of a page load
+  vizrow.querySelectorAll('a.nv').forEach(a=>a.addEventListener('click',e=>{
+    if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey||e.button!==0)return;
+    e.preventDefault();
+    const name=a.dataset.name;
+    if(name!==VIZ.meta.name)switchViz(name,a.getAttribute('href'));
+  }));
+  // warm the other data files so the first switch is instant
+  (window.requestIdleCallback||(f=>setTimeout(f,400)))(async()=>{
+    for(const s of SERIES){if(!VIZ_REG[s.name]){try{await loadVizData(s.name);}catch(e){}}}
+  });
+}
 
 /* ================= BOOT ================= */
 if(EMBED){
