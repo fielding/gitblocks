@@ -142,8 +142,11 @@ function pushStep(o){
 /* ---------- terminal ---------- */
 let tlog, tin;
 function tprint(text,cls){
+  const kind=cls==='tc'?'cmd':cls==='te'?'err':'out';
   for(const line of String(text).split('\n')){
-    const d=document.createElement('div'); d.className=cls||'to'; d.textContent=line;
+    const d=document.createElement('div');
+    if(window.GitBlocks&&GitBlocks.tty)d.innerHTML=GitBlocks.tty(line,kind);
+    else d.textContent=line;
     tlog.appendChild(d);
   }
   tlog.scrollTop=tlog.scrollHeight;
@@ -169,6 +172,7 @@ const HELP=`sandbox git — a real-enough repo with no files (so merges never co
   git reset [--soft|--mixed|--hard] <ref>
   git log [--all]       git status
   refs: names, shas, HEAD, HEAD~2, main^ …
+aliases: g=git · c=commit · co=checkout · sw=switch · br=branch · l=log · s=status · cp=cherry-pick
 also:  help · undo · clear · share  (copies a link that replays this session)`;
 
 function currentFam(){ return repo.head.on==='main'?'paper':repo.head.on?'blue':'sage'; }
@@ -443,8 +447,9 @@ function run(line){
     window.gotoStep(V.steps.length-1);
     return;
   }
-  if(c0!=='git'){sayErr(`${c0}: command not found (this terminal only speaks git — try 'help')`);return;}
-  const sub=argv[1], rest=argv.slice(2);
+  if(c0!=='git'&&c0!=='g'){sayErr(`${c0}: command not found (this terminal only speaks git — try 'help')`);return;}
+  const ALIAS={c:'commit',co:'checkout',l:'log',s:'status',sw:'switch',br:'branch',cp:'cherry-pick'};
+  const sub=ALIAS[argv[1]]||argv[1], rest=argv.slice(2);
   try{
     switch(sub){
       case 'commit': cmdCommit(rest,line); break;

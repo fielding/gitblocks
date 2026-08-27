@@ -83,6 +83,28 @@ const lerp=(a,b,u)=>a+(b-a)*u;
 const ease=u=>1-Math.pow(1-u,3);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* one terminal line -> Human++-colored html. kind: cmd | out | err */
+function ttyLine(line,kind){
+  if(kind==='err')return '<span class="tk-e">'+esc(line)+'</span>';
+  if(kind!=='cmd'){
+    const cls=line.trim().startsWith('#')?'tk-c':'tk-o';
+    return '<span class="'+cls+'">'+esc(line)+'</span>';
+  }
+  let html='', rest=line;
+  if(rest.startsWith('$')){html='<span class="tk-p">$</span>';rest=rest.slice(1);}
+  const re=/("[^"]*")|('[^']*')|(\s+)|(\S+)/g; let m, sawWord=false;
+  while((m=re.exec(rest))){
+    if(m[3]){html+=m[3];continue;}
+    let cls='tk-w';
+    if(m[1]||m[2])cls='tk-s';
+    else if(!sawWord&&(m[0]==='git'||m[0]==='g'))cls='tk-g';
+    else if(m[0].startsWith('-'))cls='tk-f';
+    sawWord=true;
+    html+='<span class="'+cls+'">'+esc(m[0])+'</span>';
+  }
+  return html;
+}
+
 const cubeSvg=(hex,s=20)=>{const sh=shade(hex);return `<svg width="${s}" height="${s+1}" viewBox="-1 -1 20 21" aria-hidden="true">
   <polygon points="9,0 18,4.5 9,9 0,4.5" fill="${sh.t}" stroke="${INK}" stroke-width="1"/>
   <polygon points="0,4.5 9,9 9,18 0,13.5" fill="${sh.l}" stroke="${INK}" stroke-width="1"/>
@@ -109,7 +131,7 @@ function skeleton(meta){
     <div id="legend" aria-hidden="true"></div>
     <div id="tip"></div>
   </div>
-  <section id="term"><div id="tlog"></div><div id="tline"><span class="tp">$</span><a class="tgo" href="playground.html">these commands work for real — open the sandbox and type your own</a></div></section>
+  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span></div><div id="tlog"></div><div id="tline"><span class="tp">$</span><a class="tgo" href="playground.html">these commands work for real — open the sandbox and type your own</a></div></section>
   <section id="panel"><div id="body"></div></section>
   <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it.</footer>
 </div>`;
@@ -507,7 +529,7 @@ function renderTerm(){
   let h='';
   for(let i=0;i<=S.i;i++){
     const c=STEPS[i].cmd; if(!c)continue;
-    h+=c.split('\n').map(l=>`<div class="${l.startsWith('$')?'tc':'to'}">${esc(l)}</div>`).join('');
+    h+=c.split('\n').map(l=>`<div>${ttyLine(l,l.startsWith('$')?'cmd':'out')}</div>`).join('');
   }
   log.innerHTML=h||'<div class="to"># the commands for each step appear here as you walk through</div>';
   log.scrollTop=log.scrollHeight;
@@ -647,6 +669,6 @@ if(Q.has('autoplay'))setAuto(true);
 requestAnimationFrame(tick);
 }
 
-window.GitBlocks={boot};
+window.GitBlocks={boot,tty:ttyLine};
 document.addEventListener('DOMContentLoaded',()=>{if(window.VIZ)boot(window.VIZ);});
 })();
