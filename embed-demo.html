@@ -1,0 +1,34 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Embed Demo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Young+Serif&display=swap">
+<style>
+  body{margin:0;background:#FBF7EE;color:#30231E;font:15px/1.7 Georgia,'Times New Roman',serif}
+  article{max-width:68ch;margin:0 auto;padding:56px 20px 120px}
+  h1{font-family:'Young Serif',Georgia,serif;font-weight:400;font-size:30px;line-height:1.2}
+  .byline{font-family:'IBM Plex Mono',monospace;font-size:12px;color:#857A6A;margin-bottom:34px}
+  code{font-family:'IBM Plex Mono',monospace;font-size:13px;background:#F5F1EA;border:1px solid #D8CDB4;border-radius:4px;padding:0 4px}
+  figure.widget{margin:36px -60px}
+  figure.widget iframe{width:100%;height:460px;border:1px solid #D8CDB4;border-radius:10px;background:#EFE7D2}
+  figure.widget figcaption{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#857A6A;text-align:center;margin-top:8px}
+  @media (max-width:840px){figure.widget{margin:36px -8px}}
+</style>
+<article>
+  <h1>What rebase actually does</h1>
+  <div class="byline">a fake blog post, to prove the widget embeds inline</div>
+  <p>People talk about <code>git rebase</code> like it picks your commits up and moves
+  them somewhere else. It doesn't — and once you see what it really does, the golden
+  rule stops being folklore and starts being obvious.</p>
+  <p>Step through it yourself (this is the live widget, iframed right into the post —
+  it starts at the replay step via <code>?embed&amp;step=7</code>):</p>
+
+  <figure class="widget">
+    <iframe src="rebase.html?embed&step=7" title="git rebase, step by step" loading="lazy"></iframe>
+    <figcaption>fig. 1 — git rebase, block by block · <a href="rebase.html">open the full walkthrough</a></figcaption>
+  </figure>
+
+  <p>Watch the torch: git takes what each of your commits <em>changed</em>, carries it
+  over to main's tip, and builds a brand-new commit there. Your originals never move.
+  They just get abandoned — which is exactly why rebasing commits somebody else
+  already has goes so wrong.</p>
+</article>
