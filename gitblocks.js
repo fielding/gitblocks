@@ -9,13 +9,15 @@
 /* blocks render in fixed colors on both themes, like the course figures */
 const INK='#30231E', PAPER_B='#F5F1EA',
       WIRE='#611D1D', LIVE='#FF463A', REDF='#D92F1F', STICK='#8A6740', MUTED='#8B8378';
-const FAM={paper:'#F5F1EA', blue:'#A8C4D6', rose:'#E4B0AB', sage:'#AECF9C', amber:'#F2D489', peach:'#F0BD94'};
+const FAM={paper:'#F5F1EA', blue:'#A8C4D6', rose:'#E4B0AB', sage:'#AECF9C', amber:'#F2D489', peach:'#F0BD94', red:'#D92F1F'};
 const hx=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
 const mixhex=(a,b,t)=>{const A=hx(a),B=hx(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');};
 const shade=c=>({t:mixhex(c,'#ffffff',.30),l:mixhex(c,'#000000',.06),r:mixhex(c,'#000000',.16),d:mixhex(c,'#000000',.28)});
 
 /* every animation in the series; `on` is decided per page from VIZ.meta.name */
 const SERIES=[
+  {group:'start here', name:'basics',     file:'basics.html',     fam:'paper', doc:'Commits & Branches'},
+  {group:'start here', name:'playground', file:'playground.html', fam:'red',   doc:'The Sandbox'},
   {group:'rewriting', name:'rebase',             file:'rebase.html',             fam:'rose',  doc:'Rebase, Replayed'},
   {group:'rewriting', name:'interactive-rebase', file:'interactive-rebase.html', fam:'rose',  doc:'Interactive Rebase, Tidied'},
   {group:'rewriting', name:'rebase-onto',        file:'rebase-onto.html',        fam:'rose',  doc:'Rebase --onto, Transplanted'},
@@ -89,7 +91,7 @@ const cubeSvg=(hex,s=20)=>{const sh=shade(hex);return `<svg width="${s}" height=
 function skeleton(meta){
   return `<div class="wrap">
   <header id="top">
-    <div id="brand"><span class="bt">git, block by block</span><span class="bs">${esc(meta.title)}</span></div>
+    <div id="brand"><a class="bt" href="index.html">git, block by block</a><span class="bs">${esc(meta.title)}</span></div>
     <div id="controls">
       <button class="ctl" id="btnBack">◂ Back</button>
       <button class="ctl primary" id="btnNext">Next ▸</button>
@@ -107,6 +109,7 @@ function skeleton(meta){
     <div id="legend" aria-hidden="true"></div>
     <div id="tip"></div>
   </div>
+  <section id="term"><div id="tlog"></div><div id="tline"><span class="tp">$</span><a class="tgo" href="playground.html">these commands work for real — open the sandbox and type your own</a></div></section>
   <section id="panel"><div id="body"></div></section>
   <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it.</footer>
 </div>`;
@@ -118,7 +121,7 @@ if(bootAC)bootAC.abort();
 bootAC=new AbortController();
 const SIG=bootAC.signal;
 VIZ_REG[VIZ.meta.name]=VIZ;
-const C=VIZ.commits, STEPS=VIZ.steps, BRANCHES=VIZ.branches||['main','feature'];
+const C=VIZ.commits, STEPS=VIZ.steps, BRANCHES=()=>VIZ.branches||['main','feature'];
 const blockColor=n=>FAM[n.fam||'paper'];
 const parentsOf=n=>[n.parent,n.parent2].filter(Boolean);
 
@@ -163,9 +166,12 @@ function renderWorld(){
   world.innerHTML='';
   // grid
   const gg=el('g',{opacity:.55});
-  for(let i=-10;i<=32;i+=2){
-    let a=P(i,-10),b=P(i,32); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
-    a=P(-10,i);b=P(32,i); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
+  let g0=-10,g1=32;
+  for(const id of st.present){const n=C[id];g0=Math.min(g0,Math.min(n.gx,n.gy)-8);g1=Math.max(g1,Math.max(n.gx,n.gy)+10);}
+  g0=2*Math.floor(g0/2);g1=2*Math.ceil(g1/2);
+  for(let i=g0;i<=g1;i+=2){
+    let a=P(i,g0),b=P(i,g1); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
+    a=P(g0,i);b=P(g1,i); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
   }
   world.appendChild(gg);
 
@@ -308,7 +314,7 @@ function drawFuture(id,op){
 /* ---- ref tags ---- */
 function restTags(refs){
   const t={}, stack={};
-  for(const b of BRANCHES){
+  for(const b of BRANCHES()){
     const cid=refs[b]; if(!cid)continue;
     const [x,y]=topC(cid), lvl=stack[cid]||0; stack[cid]=lvl+1;
     t[b]={x,y:y-34-lvl*24,commit:cid};
@@ -323,7 +329,7 @@ function drawTags(st){
   const cur=restTags(st.refs);
   const prev=restTags(STEPS[Math.max(0,S.i-1)].refs);
   const settled={};
-  const NAMES=[...BRANCHES,'HEAD'];
+  const NAMES=[...BRANCHES(),'HEAD'];
   for(const name of NAMES){
     if(!cur[name])continue;
     const w=(st.refWin&&st.refWin[name])||null;
@@ -423,7 +429,6 @@ function renderStepPanel(){
   const st=STEPS[S.i], last=S.i===STEPS.length-1;
   body.innerHTML=`<div class="eyebrow">Step ${S.i+1} of ${STEPS.length}</div>
   <h1 class="t">${st.t}</h1>
-  ${st.cmd?`<pre>${esc(st.cmd)}</pre>`:''}
   <p class="lede">${st.lede}</p>
   ${st.story}
   ${st.sub?`<p class="sub">${st.sub}</p>`:''}
@@ -470,7 +475,9 @@ function renderRefCard(name){
 /* ================= RAIL ================= */
 function renderRail(){
   const r=document.getElementById('rail');
-  r.innerHTML=STEPS.map((s,i)=>`<button class="ch ${i===S.i?'on':i<S.i?'done':''}" title="${esc(s.t)}" aria-label="Step ${i+1}: ${esc(s.t)}" onclick="gotoStep(${i})"></button>`).join('')
+  const MAXD=25, off=Math.max(0,STEPS.length-MAXD);
+  r.innerHTML=(off?`<span class="title">+${off} ·&nbsp;</span>`:'')
+    +STEPS.slice(off).map((s,j)=>{const i=off+j;return `<button class="ch ${i===S.i?'on':i<S.i?'done':''}" title="${esc(s.t)}" aria-label="Step ${i+1}: ${esc(s.t)}" onclick="gotoStep(${i})"></button>`;}).join('')
     +`<span class="title">${S.i+1} · ${esc(STEPS[S.i].t)}</span>`;
   const cap=document.getElementById('cap'); if(cap)cap.textContent=STEPS[S.i].lede;
   const atStart=S.i===0, atEnd=S.i===STEPS.length-1;
@@ -492,7 +499,18 @@ function gotoStep(i){
     if(i>0)u.searchParams.set('step',i+1);else u.searchParams.delete('step');
     history.replaceState(null,'',u);
   }catch(e){}
-  renderWorld();renderPanel();fitView(!firstBoot);firstBoot=false;
+  renderWorld();renderPanel();renderTerm();fitView(!firstBoot);firstBoot=false;
+}
+function renderTerm(){
+  if(VIZ.liveTerm)return; // the playground drives its own terminal
+  const log=document.getElementById('tlog'); if(!log)return;
+  let h='';
+  for(let i=0;i<=S.i;i++){
+    const c=STEPS[i].cmd; if(!c)continue;
+    h+=c.split('\n').map(l=>`<div class="${l.startsWith('$')?'tc':'to'}">${esc(l)}</div>`).join('');
+  }
+  log.innerHTML=h||'<div class="to"># the commands for each step appear here as you walk through</div>';
+  log.scrollTop=log.scrollHeight;
 }
 function nextStep(){if(S.i<STEPS.length-1)gotoStep(S.i+1);else setAuto(false);}
 function prevStep(){gotoStep(S.i-1);}
