@@ -423,13 +423,14 @@ function share(){
   const u=new URL(location.pathname,location.href);
   if(cmdHistory.length)u.searchParams.set('s',b64e(JSON.stringify(cmdHistory)));
   navigator.clipboard.writeText(u.href).then(
-    ()=>say(`# session link copied (${cmdHistory.length} command${cmdHistory.length===1?'':'s'} — it replays exactly)`),
+    ()=>say(`# session link copied (${cmdHistory.length} command${cmdHistory.length===1?'':'s'} — it plays back on a loop for whoever opens it)`),
     ()=>say('# copy this: '+u.href));
 }
 
 /* ---------- dispatch ---------- */
 function run(line){
   line=line.trim(); if(!line)return;
+  if(!replaying&&window.GitBlocks&&GitBlocks.stop)GitBlocks.stop(); // typing takes over from a looping replay
   tprint('$ '+line,'tc');
   const argv=tokenize(line);
   const c0=argv[0];
@@ -500,7 +501,10 @@ document.addEventListener('DOMContentLoaded',()=>{
         replaying=true;
         for(const c of cmds)if(typeof c==='string')run(c);
         replaying=false;
-        window.gotoStep(V.steps.length-1);
+        if(V.steps.length>1){
+          say('# playing on a loop — type any command to take over');
+          GitBlocks.play({loop:true});
+        }else window.gotoStep(V.steps.length-1);
       }
     }catch(e){ sayErr('# could not read the shared session in this link'); }
   }

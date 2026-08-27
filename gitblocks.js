@@ -154,7 +154,7 @@ const topC=id=>{const n=C[id];return P(n.gx+W/2,n.gy+D/2,H);};
 /* ================= STATE ================= */
 const Q=new URLSearchParams(location.search);
 const EMBED=Q.has('embed');
-const S={i:0,sel:null,selRef:null,hover:null,hoverRef:null,auto:false,tx:0,ty:0,k:1};
+const S={i:0,sel:null,selRef:null,hover:null,hoverRef:null,auto:false,loop:false,tx:0,ty:0,k:1};
 let stepT0=performance.now(), firstBoot=true;
 const svg=document.getElementById('svg'), world=document.getElementById('world'),
       tip=document.getElementById('tip'), body=document.getElementById('body');
@@ -540,6 +540,10 @@ function replayStep(){gotoStep(S.i);}
 function setAuto(on){S.auto=on;document.getElementById('btnAuto').textContent=on?'‖ Stop':'▸ Play all';}
 // inline onclick handlers in panel/rail markup reach these through window
 window.gotoStep=gotoStep; window.select=select; window.prevStep=prevStep; window.nextStep=nextStep;
+if(window.GitBlocks){
+  GitBlocks.play=o=>{S.loop=!!(o&&o.loop);gotoStep(0);setAuto(true);};
+  GitBlocks.stop=()=>{S.loop=false;setAuto(false);};
+}
 
 document.getElementById('btnNext').onclick=nextStep;
 document.getElementById('btnBack').onclick=prevStep;
@@ -617,8 +621,11 @@ function tick(){
   const active=tSec()<dur+.05;
   if(active||lastActive)renderWorld();
   lastActive=active;
-  if(S.auto&&!active&&tSec()>dur+3.4){
-    if(S.i<STEPS.length-1)nextStep();else setAuto(false);
+  const elapsed=(performance.now()-stepT0)/1000;
+  if(S.auto&&!active&&elapsed>dur+3.4){
+    if(S.i<STEPS.length-1)nextStep();
+    else if(S.loop)gotoStep(0);
+    else setAuto(false);
   }
   requestAnimationFrame(tick);
 }
@@ -666,6 +673,7 @@ if(EMBED){
 }
 gotoStep(clamp((parseInt(Q.get('step'))||1)-1,0,STEPS.length-1));
 if(Q.has('autoplay'))setAuto(true);
+if(Q.has('loop')){S.loop=true;setAuto(true);}
 requestAnimationFrame(tick);
 }
 
