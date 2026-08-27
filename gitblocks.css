@@ -36,10 +36,11 @@ button.ctl:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 button.ctl.primary{background:var(--ink);color:var(--paper)}
 button.ctl.primary:hover{opacity:.9}
 button.ctl:disabled{opacity:.35;cursor:default}
-#vizrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:13px 0 14px;border-bottom:1px solid var(--rule)}
-.nvg{font-family:var(--serif);font-size:11px;color:var(--ink-2);margin-left:14px;margin-right:2px}
-.nvg:first-child{margin-left:0}
-.nv{display:inline-flex;gap:8px;align-items:center;font-family:var(--serif);font-size:13px;color:var(--ink);padding:5px 11px;border:1.2px solid transparent;border-radius:8px;background:none;cursor:pointer;text-decoration:none}
+#vizrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start;padding:14px 0 16px;border-bottom:1px solid var(--rule)}
+.vgroup{display:flex;flex-direction:column;gap:5px}
+.vchips{display:flex;flex-wrap:wrap;gap:6px}
+.nvg{font-family:var(--serif);font-size:10.5px;color:var(--ink-2);letter-spacing:.04em;margin-left:7px}
+.nv{display:inline-flex;gap:7px;align-items:center;font-family:var(--serif);font-size:13px;color:var(--ink);padding:4px 10px;border:1.2px solid transparent;border-radius:8px;background:none;cursor:pointer;text-decoration:none}
 .nv:hover{background:var(--face)}
 .nv.on{background:var(--face);border-color:var(--ink)}
 .nv.soon{color:var(--ink-2);cursor:default}

@@ -16,14 +16,14 @@ const shade=c=>({t:mixhex(c,'#ffffff',.30),l:mixhex(c,'#000000',.06),r:mixhex(c,
 
 /* every animation in the series; `on` is decided per page from VIZ.meta.name */
 const SERIES=[
-  {group:'combining', name:'merge',              file:'merge.html',              fam:'sage',  doc:'Merge, Two Parents'},
-  {group:'combining', name:'fast-forward',       file:'fast-forward.html',       fam:'blue',  doc:'Fast-Forward, Just a Pointer'},
-  {group:'combining', name:'squash-merge',       file:'squash-merge.html',       fam:'peach', doc:'Squash Merge, One Commit'},
   {group:'rewriting', name:'rebase',             file:'rebase.html',             fam:'rose',  doc:'Rebase, Replayed'},
   {group:'rewriting', name:'interactive-rebase', file:'interactive-rebase.html', fam:'rose',  doc:'Interactive Rebase, Tidied'},
   {group:'rewriting', name:'rebase-onto',        file:'rebase-onto.html',        fam:'rose',  doc:'Rebase --onto, Transplanted'},
   {group:'rewriting', name:'amend',              file:'amend.html',              fam:'rose',  doc:'Amend, Replaced'},
   {group:'rewriting', name:'cherry-pick',        file:'cherry-pick.html',        fam:'peach', doc:'Cherry-Pick, One Commit'},
+  {group:'combining', name:'merge',              file:'merge.html',              fam:'sage',  doc:'Merge, Two Parents'},
+  {group:'combining', name:'fast-forward',       file:'fast-forward.html',       fam:'blue',  doc:'Fast-Forward, Just a Pointer'},
+  {group:'combining', name:'squash-merge',       file:'squash-merge.html',       fam:'peach', doc:'Squash Merge, One Commit'},
   {group:'undoing',   name:'reset',              file:'reset.html',              fam:'amber', doc:'Reset, Rewound'},
   {group:'undoing',   name:'revert',             file:'revert.html',             fam:'sage',  doc:'Revert, Undo Forward'},
   {group:'syncing',   name:'fetch-pull',         file:'fetch-pull.html',         fam:'blue',  doc:'Fetch vs Pull'},
@@ -587,13 +587,19 @@ function tick(){
 document.getElementById('legend').innerHTML=(VIZ.legend||[])
   .map(([fam,l])=>`<span class="li">${cubeSvg(FAM[fam]||fam)}<span>${l}</span></span>`).join('');
 const vizrow=document.getElementById('vizrow');
-let lastGroup=null;
-vizrow.innerHTML=SERIES.map(v=>{
+const chip=v=>{
   const on=v.name===VIZ.meta.name;
-  const label=v.group!==lastGroup?`<span class="nvg">${v.group}</span>`:'';
-  lastGroup=v.group;
-  return label+`<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
-}).join('');
+  return `<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
+};
+const groups=[];
+for(const v of SERIES){
+  let g=groups[groups.length-1];
+  if(!g||g.name!==v.group){g={name:v.group,items:[]};groups.push(g);}
+  g.items.push(v);
+}
+vizrow.innerHTML=groups.map(g=>
+  `<div class="vgroup"><span class="nvg">${g.name}</span><span class="vchips">${g.items.map(chip).join('')}</span></div>`
+).join('');
 if(location.protocol!=='file:'){
   // switch client-side: re-boot with the target's data instead of a page load
   vizrow.querySelectorAll('a.nv').forEach(a=>a.addEventListener('click',e=>{
