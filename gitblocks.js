@@ -16,11 +16,18 @@ const shade=c=>({t:mixhex(c,'#ffffff',.30),l:mixhex(c,'#000000',.06),r:mixhex(c,
 
 /* every animation in the series; `on` is decided per page from VIZ.meta.name */
 const SERIES=[
-  {name:'rebase',       file:'rebase.html',       fam:'rose',  doc:'Rebase, Replayed'},
-  {name:'merge',        file:'merge.html',        fam:'sage',  doc:'Merge, Two Parents'},
-  {name:'cherry-pick',  file:'cherry-pick.html',  fam:'peach', doc:'Cherry-Pick, One Commit'},
-  {name:'reset',        file:'reset.html',        fam:'amber', doc:'Reset, Rewound'},
-  {name:'fast-forward', file:'fast-forward.html', fam:'blue',  doc:'Fast-Forward, Just a Pointer'},
+  {group:'combining', name:'merge',              file:'merge.html',              fam:'sage',  doc:'Merge, Two Parents'},
+  {group:'combining', name:'fast-forward',       file:'fast-forward.html',       fam:'blue',  doc:'Fast-Forward, Just a Pointer'},
+  {group:'combining', name:'squash-merge',       file:'squash-merge.html',       fam:'peach', doc:'Squash Merge, One Commit'},
+  {group:'rewriting', name:'rebase',             file:'rebase.html',             fam:'rose',  doc:'Rebase, Replayed'},
+  {group:'rewriting', name:'interactive-rebase', file:'interactive-rebase.html', fam:'rose',  doc:'Interactive Rebase, Tidied'},
+  {group:'rewriting', name:'rebase-onto',        file:'rebase-onto.html',        fam:'rose',  doc:'Rebase --onto, Transplanted'},
+  {group:'rewriting', name:'amend',              file:'amend.html',              fam:'rose',  doc:'Amend, Replaced'},
+  {group:'rewriting', name:'cherry-pick',        file:'cherry-pick.html',        fam:'peach', doc:'Cherry-Pick, One Commit'},
+  {group:'undoing',   name:'reset',              file:'reset.html',              fam:'amber', doc:'Reset, Rewound'},
+  {group:'undoing',   name:'revert',             file:'revert.html',             fam:'sage',  doc:'Revert, Undo Forward'},
+  {group:'syncing',   name:'fetch-pull',         file:'fetch-pull.html',         fam:'blue',  doc:'Fetch vs Pull'},
+  {group:'exploring', name:'detached-head',      file:'detached-head.html',      fam:'amber', doc:'Detached HEAD, Time Travel'},
 ];
 
 /* ---- client-side switching between animations ----
@@ -358,7 +365,7 @@ function drawTags(st){
     const [tx,ty]=topC(cid);
     let anchorY=ty-4;
     for(const tag of list){
-      const dashed=tag.name==='HEAD'&&tag.detached;
+      const dashed=(tag.name==='HEAD'&&tag.detached)||tag.name.includes('/');
       g.appendChild(el('line',{x1:tx,y1:tag.y+16,x2:tx,y2:anchorY,stroke:tag.name==='HEAD'?REDF:INK,'stroke-width':1.3,'stroke-dasharray':dashed?'3 2':'none'}));
       anchorY=tag.y;
     }
@@ -369,8 +376,10 @@ function tagBox(name,x,y,isHead,detached,st,alpha){
   const label=isHead?'HEAD':name;
   const w=label.length*7.9+15;
   const g=el('g',{style:'cursor:pointer',opacity:alpha==null?1:alpha});
+  const isRemote=!isHead&&name.includes('/');
   const r=el('rect',{x:x-w/2,y,width:w,height:16,fill:isHead?REDF:PAPER_B,stroke:isHead?REDF:INK,'stroke-width':1.2});
   if(isHead&&detached){r.setAttribute('stroke',PAPER_B);r.setAttribute('stroke-dasharray','3 2');}
+  if(isRemote)r.setAttribute('stroke-dasharray','3 2');
   g.appendChild(r);
   const t=el('text',{x,y:y+11.8,'text-anchor':'middle','font-size':'10.5','font-family':'var(--mono)','font-weight':'600','letter-spacing':'.06em',fill:isHead?PAPER_B:INK});
   t.textContent=label; g.appendChild(t);
@@ -578,9 +587,12 @@ function tick(){
 document.getElementById('legend').innerHTML=(VIZ.legend||[])
   .map(([fam,l])=>`<span class="li">${cubeSvg(FAM[fam]||fam)}<span>${l}</span></span>`).join('');
 const vizrow=document.getElementById('vizrow');
+let lastGroup=null;
 vizrow.innerHTML=SERIES.map(v=>{
   const on=v.name===VIZ.meta.name;
-  return `<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
+  const label=v.group!==lastGroup?`<span class="nvg">${v.group}</span>`:'';
+  lastGroup=v.group;
+  return label+`<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
 }).join('');
 if(location.protocol!=='file:'){
   // switch client-side: re-boot with the target's data instead of a page load
