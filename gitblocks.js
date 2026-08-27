@@ -131,7 +131,7 @@ function skeleton(meta){
     <div id="legend" aria-hidden="true"></div>
     <div id="tip"></div>
   </div>
-  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span></div><div id="tlog"></div><div id="tline"><span class="tp">$</span><a class="tgo" href="playground.html">these commands work for real — open the sandbox and type your own</a></div></section>
+  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span></div>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
   <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it.</footer>
 </div>`;
@@ -523,40 +523,63 @@ function gotoStep(i){
   }catch(e){}
   renderWorld();renderPanel();renderTerm();fitView(!firstBoot);firstBoot=false;
 }
+let termAnim=0;
 function renderTerm(){
-  if(VIZ.liveTerm)return; // the playground drives its own terminal
+  if(VIZ.liveTerm)return; // the playground drives its own terminal while interactive
   const log=document.getElementById('tlog'); if(!log)return;
-  let h='';
-  for(let i=0;i<=S.i;i++){
-    const c=STEPS[i].cmd; if(!c)continue;
-    h+=c.split('\n').map(l=>`<div>${ttyLine(l,l.startsWith('$')?'cmd':'out')}</div>`).join('');
-  }
-  log.innerHTML=h||'<div class="to"># the commands for each step appear here as you walk through</div>';
-  log.scrollTop=log.scrollHeight;
+  termAnim++; const gen=termAnim;
+  const lineHtml=l=>`<div>${ttyLine(l,l.startsWith('$')?'cmd':'out')}</div>`;
+  let base='';
+  for(let i=0;i<S.i;i++){const c=STEPS[i].cmd;if(c)base+=c.split('\n').map(lineHtml).join('');}
+  const cur=STEPS[S.i].cmd?STEPS[S.i].cmd.split('\n'):[];
+  const paint=h=>{log.innerHTML=h;log.scrollTop=log.scrollHeight;};
+  if(REDUCED||!cur.length){paint(base+cur.map(lineHtml).join(''));return;}
+  // type the current step's commands character by character
+  let li=0, ci=0;
+  (function tick(){
+    if(gen!==termAnim||VIZ.liveTerm)return;
+    let h=base;
+    for(let k=0;k<li;k++)h+=lineHtml(cur[k]);
+    if(li>=cur.length){paint(h);return;}
+    const line=cur[li];
+    if(line.startsWith('$')){
+      if(ci<line.length){
+        ci++;
+        h+=`<div>${ttyLine(line.slice(0,ci),'cmd')}<span class="tk-cur">▌</span></div>`;
+        paint(h); setTimeout(tick,ci<=2?160:24);
+      }else{li++;ci=0;h+=lineHtml(line);paint(h);setTimeout(tick,150);}
+    }else{li++;ci=0;h+=lineHtml(line);paint(h);setTimeout(tick,55);}
+  })();
 }
 function nextStep(){if(S.i<STEPS.length-1)gotoStep(S.i+1);else setAuto(false);}
 function prevStep(){gotoStep(S.i-1);}
 function replayStep(){gotoStep(S.i);}
 function setAuto(on){S.auto=on;document.getElementById('btnAuto').textContent=on?'‖ Stop':'▸ Play all';}
-// inline onclick handlers in panel/rail markup reach these through window
-window.gotoStep=gotoStep; window.select=select; window.prevStep=prevStep; window.nextStep=nextStep;
+// inline onclick handlers reach these through window; any user navigation
+// takes over from the ambient loop
+function takeOver(){S.loop=false;if(S.auto)setAuto(false);}
+window.gotoStep=i=>{takeOver();gotoStep(i);};
+window.prevStep=()=>{takeOver();prevStep();};
+window.nextStep=()=>{takeOver();nextStep();};
+window.select=select;
 if(window.GitBlocks){
   GitBlocks.play=o=>{S.loop=!!(o&&o.loop);gotoStep(0);setAuto(true);};
-  GitBlocks.stop=()=>{S.loop=false;setAuto(false);};
+  GitBlocks.stop=takeOver;
 }
 
-document.getElementById('btnNext').onclick=nextStep;
-document.getElementById('btnBack').onclick=prevStep;
+document.getElementById('btnNext').onclick=()=>window.nextStep();
+document.getElementById('btnBack').onclick=()=>window.prevStep();
 document.getElementById('btnReplay').onclick=replayStep;
 document.getElementById('zfit').onclick=()=>fitView(true);
 document.getElementById('btnAuto').onclick=()=>{
-  if(!S.auto&&S.i===STEPS.length-1)gotoStep(0);
-  setAuto(!S.auto);
+  if(S.auto){takeOver();return;}
+  if(S.i===STEPS.length-1)gotoStep(0);
+  S.loop=true; setAuto(true);
 };
 document.addEventListener('keydown',e=>{
   if(e.target.tagName==='INPUT')return;
-  if(e.key==='ArrowRight'||e.key==='Enter'||e.key===']'){e.preventDefault();nextStep();}
-  else if(e.key==='ArrowLeft'||e.key==='['){e.preventDefault();prevStep();}
+  if(e.key==='ArrowRight'||e.key==='Enter'||e.key===']'){e.preventDefault();window.nextStep();}
+  else if(e.key==='ArrowLeft'||e.key==='['){e.preventDefault();window.prevStep();}
   else if(e.key==='r'){e.preventDefault();replayStep();}
   else if(e.key===' '){e.preventDefault();document.getElementById('btnAuto').click();}
   else if(e.key==='Escape'){select(null);}
@@ -668,12 +691,13 @@ if(EMBED){
     `<button class="ctl" id="ebk" aria-label="Back">◂</button>`+
     `<button class="ctl" id="enx" aria-label="Next">▸</button>`+
     `<a class="ctl" href="${location.pathname}" target="_blank" title="Open the full walkthrough">⤢</a>`;
-  document.getElementById('ebk').onclick=prevStep;
-  document.getElementById('enx').onclick=nextStep;
+  document.getElementById('ebk').onclick=()=>window.prevStep();
+  document.getElementById('enx').onclick=()=>window.nextStep();
 }
 gotoStep(clamp((parseInt(Q.get('step'))||1)-1,0,STEPS.length-1));
-if(Q.has('autoplay'))setAuto(true);
 if(Q.has('loop')){S.loop=true;setAuto(true);}
+else if(Q.has('autoplay'))setAuto(true);
+else if(!VIZ.liveTerm&&!Q.has('noplay')&&!REDUCED){S.loop=true;setAuto(true);}
 requestAnimationFrame(tick);
 }
 

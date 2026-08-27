@@ -131,8 +131,9 @@ function refSnapshot(){
 }
 function pushStep(o){
   V.branches=Object.keys(repo.branches);
+  const cmd=curLine?('$ '+curLine+(outBuf&&outBuf.length?'\n'+outBuf.join('\n'):'')):null;
   V.steps.push({
-    t:o.t, lede:o.lede||'', story:o.story||'', cmd:null, plumbing:null,
+    t:o.t, lede:o.lede||'', story:o.story||'', cmd, plumbing:null,
     present:Object.keys(V.commits), dim:[], ghost:unreachableIds(), halo:o.halo||[], notes:o.notes||{},
     refs:refSnapshot(), ...(o.anim||{}),
   });
@@ -151,7 +152,8 @@ function tprint(text,cls){
   }
   tlog.scrollTop=tlog.scrollHeight;
 }
-const say=t=>tprint(t,'to');
+let outBuf=null, curLine=null;
+const say=t=>{tprint(t,'to'); if(outBuf)outBuf.push(...String(t).split('\n'));};
 const sayErr=t=>tprint(t,'te');
 
 function tokenize(line){
@@ -430,7 +432,7 @@ function share(){
 /* ---------- dispatch ---------- */
 function run(line){
   line=line.trim(); if(!line)return;
-  if(!replaying&&window.GitBlocks&&GitBlocks.stop)GitBlocks.stop(); // typing takes over from a looping replay
+  if(!replaying&&window.GitBlocks&&GitBlocks.stop){GitBlocks.stop();V.liveTerm=true;} // typing takes over from a looping replay
   tprint('$ '+line,'tc');
   const argv=tokenize(line);
   const c0=argv[0];
@@ -449,6 +451,7 @@ function run(line){
     return;
   }
   if(c0!=='git'&&c0!=='g'){sayErr(`${c0}: command not found (this terminal only speaks git — try 'help')`);return;}
+  curLine=line; outBuf=[];
   const ALIAS={c:'commit',co:'checkout',l:'log',s:'status',sw:'switch',br:'branch',cp:'cherry-pick'};
   const sub=ALIAS[argv[1]]||argv[1], rest=argv.slice(2);
   try{
@@ -472,12 +475,15 @@ function run(line){
       default: sayErr(`git: '${sub??''}' is not a sandbox command — try 'help'`);
     }
   }catch(e){ sayErr('sandbox error: '+e.message); }
+  finally{ curLine=null; outBuf=null; }
 }
 
 /* ---------- boot ---------- */
 document.addEventListener('DOMContentLoaded',()=>{
   tlog=document.getElementById('tlog');
-  const tline=document.getElementById('tline');
+  const tline=document.createElement('div');
+  tline.id='tline';
+  document.getElementById('term').appendChild(tline);
   tline.innerHTML=`<span class="tp">$</span><input id="tin" autocomplete="off" spellcheck="false"
     placeholder='git commit -m "try me" — or: help'>
     <button class="ctl" id="tshare" title="copy a link that replays this session">⧉ share</button>`;
@@ -502,7 +508,7 @@ document.addEventListener('DOMContentLoaded',()=>{
         for(const c of cmds)if(typeof c==='string')run(c);
         replaying=false;
         if(V.steps.length>1){
-          say('# playing on a loop — type any command to take over');
+          V.liveTerm=false; tlog.innerHTML='';
           GitBlocks.play({loop:true});
         }else window.gotoStep(V.steps.length-1);
       }
