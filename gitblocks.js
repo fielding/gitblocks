@@ -156,9 +156,9 @@ function renderWorld(){
   world.innerHTML='';
   // grid
   const gg=el('g',{opacity:.55});
-  for(let i=-4;i<=26;i+=2){
-    let a=P(i,-4),b=P(i,26); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
-    a=P(-4,i);b=P(26,i); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
+  for(let i=-10;i<=32;i+=2){
+    let a=P(i,-10),b=P(i,32); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
+    a=P(-10,i);b=P(32,i); gg.appendChild(el('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:'var(--grid)','stroke-width':.6}));
   }
   world.appendChild(gg);
 
@@ -255,12 +255,12 @@ function drawCommit(id,v,st){
   if(st.halo.includes(id)&&!sel)
     g.appendChild(el('polygon',{class:'halo',points:pts([P(gx-.35,gy-.35),P(gx+W+.35,gy-.35),P(gx+W+.35,gy+D+.35),P(gx-.35,gy+D+.35)]),fill:'none',stroke:LIVE,'stroke-width':2,'stroke-dasharray':'5 4'}));
   // code chip on top face
-  const c=P(gx+W/2,gy+D/2,H+lift), chipW=n.code.length*7+10;
+  const c=P(gx+W/2,gy+D/2,H+lift), chipW=n.code.length*7.6+11;
   const ghosted=v.gh>=.5;
   g.appendChild(el('rect',{x:c[0]-chipW/2,y:c[1]-8,width:chipW,height:14,
     fill:sel?INK:PAPER_B,
     stroke:ghosted?sh.d:INK,'stroke-width':1,'stroke-dasharray':ghosted?'3 2':'none'}));
-  const t=el('text',{x:c[0],y:c[1]+3,'text-anchor':'middle','font-size':'9','font-family':'var(--mono)',
+  const t=el('text',{x:c[0],y:c[1]+3.5,'text-anchor':'middle','font-size':'10','font-family':'var(--mono)',
     fill:sel?PAPER_B:(ghosted?MUTED:INK),'font-weight':'600'});
   t.textContent=n.code; g.appendChild(t);
 
@@ -273,13 +273,13 @@ function drawCommit(id,v,st){
 
 function drawLabel(id,v,st){
   const n=C[id], g=el('g',{style:'pointer-events:none',opacity:v.op});
-  const b=P(n.gx+W,n.gy+D,0), txt=n.sha, w=txt.length*6.6+10, y=b[1]+9;
+  const b=P(n.gx+W,n.gy+D,0), txt=n.sha, w=txt.length*7.2+11, y=b[1]+9;
   const dim=v.gh>0.5, sel=S.sel===id, tinted=(n.fam&&n.fam!=='paper'&&n.fam!=='blue');
   g.appendChild(el('rect',{x:b[0]-w/2,y,width:w,height:14,fill:sel?INK:PAPER_B,stroke:dim?MUTED:INK,'stroke-width':.9,'stroke-dasharray':dim?'3 2':'none'}));
-  const t=el('text',{x:b[0],y:y+10.5,'text-anchor':'middle','font-size':'9','font-family':'var(--mono)','letter-spacing':'.04em',fill:sel?PAPER_B:(dim?MUTED:INK),'font-weight':'500'});
+  const t=el('text',{x:b[0],y:y+10.8,'text-anchor':'middle','font-size':'10','font-family':'var(--mono)','letter-spacing':'.04em',fill:sel?PAPER_B:(dim?MUTED:INK),'font-weight':'500'});
   t.textContent=txt; g.appendChild(t);
   if(st.notes[id]){
-    const nt=el('text',{x:b[0],y:y+26,'text-anchor':'middle','font-size':'8.5','font-family':'var(--mono)','letter-spacing':'.1em',fill:tinted?'var(--rose)':'var(--ink-2)','font-weight':tinted?'600':'400'});
+    const nt=el('text',{x:b[0],y:y+26,'text-anchor':'middle','font-size':'9.5','font-family':'var(--mono)','letter-spacing':'.1em',fill:tinted?'var(--rose)':'var(--ink-2)','font-weight':tinted?'600':'400'});
     nt.textContent=st.notes[id].toUpperCase(); g.appendChild(nt);
   }
   return g;
@@ -291,9 +291,9 @@ function drawFuture(id,op){
   poly([P(gx,gy+D),P(gx+W,gy+D),P(gx+W,gy+D,H),P(gx,gy+D,H)]);
   poly([P(gx+W,gy),P(gx+W,gy+D),P(gx+W,gy+D,H),P(gx+W,gy,H)]);
   poly([P(gx,gy,H),P(gx+W,gy,H),P(gx+W,gy+D,H),P(gx,gy+D,H)]);
-  const c=P(gx+W/2,gy+D/2,H), chipW=n.code.length*7+10;
+  const c=P(gx+W/2,gy+D/2,H), chipW=n.code.length*7.6+11;
   g.appendChild(el('rect',{x:c[0]-chipW/2,y:c[1]-8,width:chipW,height:14,fill:'none',stroke:rc,'stroke-width':1,'stroke-dasharray':'3 2'}));
-  const t=el('text',{x:c[0],y:c[1]+3,'text-anchor':'middle','font-size':'9','font-family':'var(--mono)',fill:rc,'font-weight':'600'});
+  const t=el('text',{x:c[0],y:c[1]+3.5,'text-anchor':'middle','font-size':'10','font-family':'var(--mono)',fill:rc,'font-weight':'600'});
   t.textContent=n.code; g.appendChild(t);
   return g;
 }
@@ -367,12 +367,12 @@ function drawTags(st){
 }
 function tagBox(name,x,y,isHead,detached,st,alpha){
   const label=isHead?'HEAD':name;
-  const w=label.length*7.2+14;
+  const w=label.length*7.9+15;
   const g=el('g',{style:'cursor:pointer',opacity:alpha==null?1:alpha});
   const r=el('rect',{x:x-w/2,y,width:w,height:16,fill:isHead?REDF:PAPER_B,stroke:isHead?REDF:INK,'stroke-width':1.2});
   if(isHead&&detached){r.setAttribute('stroke',PAPER_B);r.setAttribute('stroke-dasharray','3 2');}
   g.appendChild(r);
-  const t=el('text',{x,y:y+11.5,'text-anchor':'middle','font-size':'9.5','font-family':'var(--mono)','font-weight':'600','letter-spacing':'.06em',fill:isHead?PAPER_B:INK});
+  const t=el('text',{x,y:y+11.8,'text-anchor':'middle','font-size':'10.5','font-family':'var(--mono)','font-weight':'600','letter-spacing':'.06em',fill:isHead?PAPER_B:INK});
   t.textContent=label; g.appendChild(t);
   if(isHead&&detached){
     const d=el('text',{x:x+w/2+5,y:y+11.5,'font-size':'8.5','font-family':'var(--mono)',fill:'var(--red)','letter-spacing':'.08em','font-weight':'600'});

@@ -22,7 +22,7 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.55;min-height:100vh}
+body{background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:13px;line-height:1.55;min-height:100vh;overflow-x:hidden}
 .wrap{max-width:960px;margin:0 auto;padding:0 20px 8px}
 #top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:20px 0 14px;border-bottom:1px solid var(--rule)}
 #brand{display:flex;align-items:baseline;gap:10px;min-width:0;white-space:nowrap;overflow:hidden}
@@ -46,7 +46,8 @@ button.ctl:disabled{opacity:.35;cursor:default}
 .nv svg{flex:none}
 #foot{margin-top:26px;padding:12px 0 44px;font-size:10.5px;color:var(--ink-2);border-top:1px solid var(--rule)}
 #foot code{font-size:10px}
-#canvasWrap{position:relative;min-width:0;background:var(--paper);height:clamp(380px,56vh,580px);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:14px 0 20px}
+/* the figure breaks out of the text column to full viewport width */
+#canvasWrap{position:relative;background:var(--paper);height:clamp(420px,72vh,860px);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);overflow:hidden;margin:14px 0 20px;width:100vw;left:50%;margin-left:-50vw}
 #svg{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
 #svg.dragging{cursor:grabbing}
 #zoom{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:6px}
@@ -83,7 +84,7 @@ details > *:not(summary){margin-top:8px}
 body.embed{overflow:hidden}
 body.embed .wrap{max-width:none;padding:0}
 body.embed #top,body.embed #panel,body.embed #zoom,body.embed #vizrow,body.embed #foot{display:none}
-body.embed #canvasWrap{height:100vh;border:none;border-radius:0;margin:0}
+body.embed #canvasWrap{height:100vh;border:none;margin:0;width:auto;left:auto}
 #cap{position:absolute;left:16px;top:38px;display:none;font-size:12px;color:var(--ink-2);max-width:min(62%,48ch);line-height:1.45}
 body.embed #cap{display:block}
 #econtrols{position:absolute;right:12px;top:12px;display:none;gap:6px}
@@ -96,5 +97,5 @@ body.embed #econtrols{display:flex}
   #brand .bs{display:none}
   #controls{gap:5px}
   button.ctl{padding:4px 8px;font-size:11px}
-  #canvasWrap{height:clamp(320px,48vh,460px)}
+  #canvasWrap{height:clamp(340px,54vh,520px)}
 }
