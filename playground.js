@@ -324,6 +324,8 @@ function cmdMerge(args,line){
 
 function cmdRebase(args,line){
   if(!repo.head.on){sayErr('fatal: this sandbox rebases branches, not detached HEADs');return;}
+  const inter=args.includes('-i')||args.includes('--interactive');
+  args=args.filter(a=>a!=='-i'&&a!=='--interactive');
   let base,cutTok,baseTok;
   if(args[0]==='--onto'){ baseTok=args[1]; cutTok=args[2]; }
   else { baseTok=args[0]; cutTok=args[0]; }
@@ -345,6 +347,22 @@ function cmdRebase(args,line){
     return;
   }
   snap(line);
+  if(inter&&range.length>1){
+    // sandbox auto-squashes the todo list into one commit
+    say('# real git opens the todo in your editor; the sandbox squashes it for you:');
+    range.forEach((src,i)=>say(`${i===0?'pick  ':'squash'} ${V.commits[src].sha} ${V.commits[src].msg}`));
+    const first=range[0];
+    const id=newCommit({msg:V.commits[first].msg,parents:[base],fam:'rose',code:'S′'});
+    repo.branches[repo.head.on]=id;
+    say(`Successfully rebased and updated refs/heads/${repo.head.on}.`);
+    say(`(${range.length} commits squashed into ${V.commits[id].sha} — the originals are strays now)`);
+    const packets=range.map((src,i)=>({from:src,to:id,label:V.commits[src].msg.slice(0,18),win:[.15+i*.25,.95+i*.25]}));
+    const dur=.95+(range.length-1)*.25;
+    pushStep({t:'git rebase -i '+(baseTok||''),
+      lede:`${range.length} commits fold into one — squash is the daily-driver rebase.`,
+      anim:{packets,appear:{[id]:[dur-.1,dur+.5]},refWin:{[repo.head.on]:[dur+.6,dur+1.2],HEAD:[dur+.6,dur+1.2]}}});
+    return;
+  }
   let tip=base; const packets=[],appear={};
   range.forEach((src,i)=>{
     const id=newCommit({msg:V.commits[src].msg,parents:[tip],fam:'rose',code:V.commits[src].code+'′',copyOf:src});

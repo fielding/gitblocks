@@ -133,7 +133,7 @@ function skeleton(meta){
   </div>
   <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
-  <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it.</footer>
+  <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it. · a <a href="https://redstone.university">redstone.university</a> companion</footer>
 </div>`;
 }
 
@@ -497,10 +497,20 @@ function renderRefCard(name){
 /* ================= RAIL ================= */
 function renderRail(){
   const r=document.getElementById('rail');
-  const MAXD=25, off=Math.max(0,STEPS.length-MAXD);
-  r.innerHTML=(off?`<span class="title">+${off} ·&nbsp;</span>`:'')
-    +STEPS.slice(off).map((s,j)=>{const i=off+j;return `<button class="ch ${i===S.i?'on':i<S.i?'done':''}" title="${esc(s.t)}" aria-label="Step ${i+1}: ${esc(s.t)}" onclick="gotoStep(${i})"></button>`;}).join('')
-    +`<span class="title">${S.i+1} · ${esc(STEPS[S.i].t)}</span>`;
+  if(STEPS.length>15){
+    // long sandbox histories: a seekable meter instead of a dot per step
+    const pct=STEPS.length>1?(S.i/(STEPS.length-1))*100:0;
+    r.innerHTML=`<div class="meter" role="slider" aria-valuemin="1" aria-valuemax="${STEPS.length}" aria-valuenow="${S.i+1}"><span style="width:${pct}%"></span></div>`
+      +`<span class="title">${S.i+1} / ${STEPS.length} · ${esc(STEPS[S.i].t)}</span>`;
+    const m=r.querySelector('.meter');
+    m.addEventListener('click',e=>{
+      const rect=m.getBoundingClientRect();
+      window.gotoStep(Math.round(((e.clientX-rect.left)/rect.width)*(STEPS.length-1)));
+    });
+  }else{
+    r.innerHTML=STEPS.map((s,i)=>`<button class="ch ${i===S.i?'on':i<S.i?'done':''}" title="${esc(s.t)}" aria-label="Step ${i+1}: ${esc(s.t)}" onclick="gotoStep(${i})"></button>`).join('')
+      +`<span class="title">${S.i+1} · ${esc(STEPS[S.i].t)}</span>`;
+  }
   const cap=document.getElementById('cap'); if(cap)cap.textContent=STEPS[S.i].lede;
   const atStart=S.i===0, atEnd=S.i===STEPS.length-1;
   document.getElementById('btnBack').disabled=atStart;
