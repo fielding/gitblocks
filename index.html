@@ -34,20 +34,24 @@
   .sand{display:flex;gap:16px;align-items:center;background:var(--face);border:1px solid var(--rule);border-radius:10px;padding:16px 18px;margin-top:8px}
   .sand .go{flex:none}
   .foot2{margin-top:48px;padding-top:14px;border-top:1px solid var(--rule);font-size:10.5px;color:var(--ink-2)}
+  .hero{margin:26px 0 8px}
+  .hero iframe{width:100%;height:440px;border:1px solid var(--rule);border-radius:10px;background:var(--paper);display:block}
+  .hero figcaption{font-size:11px;color:var(--ink-2);margin-top:7px;text-align:center}
+  .hero figcaption a{color:var(--ink-2)}
+  .sand{align-items:flex-start}
+  .minidemo{background:#292929;border:1px solid #3E3E3C;border-radius:8px;padding:10px 13px;font-size:11.5px;line-height:1.6;white-space:pre-wrap}
+  a.ctl{display:inline-flex;align-items:center;padding:7px 14px;border:1.2px solid var(--ink);border-radius:7px;background:var(--ink);color:var(--paper);font-size:12.5px}
+  a.ctl:hover{opacity:.9}
 </style>
 <div class="home">
   <h1>git, block by block</h1>
   <p class="big">Animated walkthroughs of what git commands <em>actually</em> do. Commits are blocks that never move; branches are tags that do. Watch each command play out step by step — then open the sandbox and type the commands yourself.</p>
   <p class="ru">A companion to <a href="https://redstone.university">Redstone University</a> — the same block language that renders a CS course out of Minecraft, aimed at git. Taking the course and new to version control? Start here, then head back.</p>
 
-  <h2>How to read the blocks</h2>
-  <div class="key">
-    <div class="k"><span data-cube="paper"></span><span><b>Blocks are commits.</b> They never move, ever — every command that seems to move commits actually makes copies.</span></div>
-    <div class="k"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg><span><b>Tags are refs.</b> A branch is a movable name pointing at one commit; the red HEAD tag is where you're standing.</span></div>
-    <div class="k"><svg width="30" height="28"><line x1="15" y1="14" x2="15" y2="24" stroke="#8A6740" stroke-width="3.5" stroke-linecap="round"/><rect x="11" y="4" width="8" height="9" rx="1.5" fill="#D92F1F" stroke="#30231E" stroke-width=".8"/></svg><span><b>The torch is a change in flight</b> — a commit's diff being replayed somewhere new (rebase, cherry-pick, revert…).</span></div>
-    <div class="k"><span data-ghost></span><span><b>Dashed means not-quite-here:</b> faint sketches show where new commits will land; ghosts are abandoned commits the reflog still remembers.</span></div>
-    <div class="k"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg><span><b>Wires point at parents.</b> History is walked backwards — a commit knows where it came from, never what comes next.</span></div>
-  </div>
+  <figure class="hero">
+    <iframe src="rebase.html?embed&loop" title="git rebase, playing itself" loading="eager"></iframe>
+    <figcaption>live — <a href="rebase.html">rebase</a> playing itself on a loop. every animation on this site runs like this.</figcaption>
+  </figure>
 
   <h2>Start here</h2>
   <ol class="path">
@@ -60,8 +64,20 @@
 
   <h2>The sandbox</h2>
   <div class="sand">
-    <span style="font-size:12.5px;line-height:1.55;max-width:52ch">An open-ended repo with a real terminal: <code>commit</code>, <code>branch</code>, <code>merge</code>, <code>rebase</code>, <code>cherry-pick</code>, <code>reset</code>, <code>revert</code>… every command animates the blocks above it, and <code>share</code> copies a link that replays your whole session for someone else.</span>
+    <div style="flex:1;min-width:0">
+      <div class="minidemo"><div><span class="tk-p">$</span> <span class="tk-g">git</span> <span class="tk-w">switch</span> <span class="tk-f">-c</span> <span class="tk-w">feature</span></div><div class="tk-o">Switched to a new branch 'feature'</div><div><span class="tk-p">$</span> <span class="tk-g">git</span> <span class="tk-w">rebase</span> <span class="tk-w">main</span><span class="tk-cur">▌</span></div></div>
+      <span style="display:block;font-size:12.5px;line-height:1.55;margin-top:10px">An open-ended repo with a real terminal — every command animates the blocks above it, and <code>share</code> copies a link that <em>replays your whole session, typed out, on a loop</em>.</span>
+    </div>
     <a class="ctl primary go" href="playground.html" style="text-decoration:none">Open it ▸</a>
+  </div>
+
+  <h2>How to read the blocks</h2>
+  <div class="key">
+    <div class="k"><span data-cube="paper"></span><span><b>Blocks are commits.</b> They never move, ever — every command that seems to move commits actually makes copies.</span></div>
+    <div class="k"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg><span><b>Tags are refs.</b> A branch is a movable name pointing at one commit; the red HEAD tag is where you're standing.</span></div>
+    <div class="k"><svg width="30" height="28"><line x1="15" y1="14" x2="15" y2="24" stroke="#8A6740" stroke-width="3.5" stroke-linecap="round"/><rect x="11" y="4" width="8" height="9" rx="1.5" fill="#D92F1F" stroke="#30231E" stroke-width=".8"/></svg><span><b>The torch is a change in flight</b> — a commit's diff being replayed somewhere new (rebase, cherry-pick, revert…).</span></div>
+    <div class="k"><span data-ghost></span><span><b>Dashed means not-quite-here:</b> faint sketches show where new commits will land; ghosts are abandoned commits the reflog still remembers.</span></div>
+    <div class="k"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg><span><b>Wires point at parents.</b> History is walked backwards — a commit knows where it came from, never what comes next.</span></div>
   </div>
 
   <h2>All the animations</h2>
