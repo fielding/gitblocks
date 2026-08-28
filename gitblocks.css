@@ -106,15 +106,15 @@ body.embed #econtrols{display:flex}
 a.bt{text-decoration:none}
 a.bt:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
 /* ---- the terminal (Human++ palette; deliberately dark in both themes) ---- */
-#term{margin:18px 0 4px;border:1px solid #38332A;border-radius:10px;background:#171511;font-size:12.5px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06)}
-#tbar{display:flex;align-items:center;gap:7px;padding:8px 13px;background:#12100D;border-bottom:1px solid #2B2720}
+#term{margin:18px 0 4px;border:1px solid #3E3E3C;border-radius:10px;background:#292928;font-size:12.5px;overflow:hidden;box-shadow:0 1px 0 rgba(0,0,0,.06)}
+#tbar{display:flex;align-items:center;gap:7px;padding:8px 13px;background:#292928;border-bottom:1px solid #3E3E3C}
 #tbar .td{width:10px;height:10px;border-radius:50%;flex:none}
 #tbar .tt{margin-left:6px;font-size:10.5px;letter-spacing:.05em;color:#7A7466}
 #tbar .tgo{margin-left:auto;font-size:10.5px}
 #tlog{max-height:220px;overflow-y:auto;padding:11px 15px 3px;white-space:pre-wrap;line-height:1.55}
 #tlog::-webkit-scrollbar{width:8px}
-#tlog::-webkit-scrollbar-thumb{background:#3A352C;border-radius:4px}
-#term ::selection{background:#3A352C;color:#E8E2D4}
+#tlog::-webkit-scrollbar-thumb{background:#454542;border-radius:4px}
+#term ::selection{background:#454542;color:#F0EBDF}
 .tk-p{color:#7A7466}
 .tk-g{color:#1ad0d6}
 .tk-w{color:#F5F1EA}
@@ -123,15 +123,15 @@ a.bt:hover{text-decoration:underline;text-decoration-thickness:1px;text-underlin
 .tk-o{color:#CFC8B8}
 .tk-c{color:#7A7466;font-style:italic}
 .tk-e{color:#e7349c}
-#tline{display:flex;gap:9px;padding:9px 15px 11px;align-items:center;border-top:1px solid #2B2720;background:#171511}
+#tline{display:flex;gap:9px;padding:9px 15px 11px;align-items:center;border-top:1px solid #3E3E3C;background:#292928}
 #tline .tp{color:#04b372}
 #tin{flex:1;background:none;border:none;outline:none;font:inherit;font-size:12.5px;color:#F5F1EA;caret-color:#f2a633;min-width:0}
 #tin::placeholder{color:#7A7466}
 body.embed #term{display:none}
 .tgo{color:#5e84b6;text-decoration:none;font-size:12px}
 .tgo:hover{color:#458ae2;text-decoration:underline;text-underline-offset:3px}
-#tshare{margin-left:auto;flex:none;background:#12100D;color:#CFC8B8;border:1px solid #3A352C;border-radius:6px}
-#tshare:hover{background:#2B2720;color:#F5F1EA}
+#tshare{margin-left:auto;flex:none;background:#232322;color:#CFC8B8;border:1px solid #454542;border-radius:6px}
+#tshare:hover{background:#3A3A38;color:#F5F1EA}
 .tk-cur{color:#f2a633;animation:tblink 1s steps(2) infinite}
 @keyframes tblink{50%{opacity:0}}
 @media (prefers-reduced-motion: reduce){.tk-cur{animation:none}}
