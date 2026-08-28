@@ -133,7 +133,7 @@ function skeleton(meta){
   </div>
   <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
-  <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it. · a <a href="https://redstone.university">redstone.university</a> companion</footer>
+  <footer id="foot">every animation on this page embeds anywhere: append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it. · a <a href="https://redstone.university">redstone.university</a> companion</footer>
 </div>`;
 }
 
@@ -299,7 +299,7 @@ function drawCommit(id,v,st){
     fill:sel?PAPER_B:(ghosted?MUTED:INK),'font-weight':'600'});
   t.textContent=n.code; g.appendChild(t);
 
-  g.addEventListener('mouseenter',e=>{S.hover=id;showTip(e,C[id].sha+' — '+C[id].msg);renderPanel();renderWorld();});
+  g.addEventListener('mouseenter',e=>{S.hover=id;showTip(e,C[id].sha+' · '+C[id].msg);renderPanel();renderWorld();});
   g.addEventListener('mousemove',moveTip);
   g.addEventListener('mouseleave',()=>{if(S.hover===id){S.hover=null;hideTip();renderPanel();renderWorld();}});
   g.addEventListener('click',e=>{e.stopPropagation();select(id);});
@@ -420,9 +420,9 @@ function tagBox(name,x,y,isHead,detached,st,alpha,isTag){
     const d=el('text',{x:x+w/2+5,y:y+11.5,'font-size':'8.5','font-family':'var(--mono)',fill:'var(--red)','letter-spacing':'.08em','font-weight':'600'});
     d.textContent='(detached)'; g.appendChild(d);
   }
-  const defaults={HEAD:'HEAD — where you are; detached = pointing at a commit, not a branch'};
+  const defaults={HEAD:'HEAD: where you are; detached = pointing at a commit, not a branch'};
   const blurb=(VIZ.refBlurbs&&VIZ.refBlurbs[isHead?'HEAD':name])||defaults[isHead?'HEAD':name]
-    ||(isTag?`${name} — a tag: a ref that never moves`:`${name} — a branch is just a movable pointer to one commit`);
+    ||(isTag?`${name}: a tag, a ref that never moves`:`${name}: a branch is just a movable pointer to one commit`);
   g.addEventListener('mouseenter',e=>{S.hoverRef=isHead?'HEAD':name;showTip(e,blurb);renderPanel();});
   g.addEventListener('mousemove',moveTip);
   g.addEventListener('mouseleave',()=>{if(S.hoverRef){S.hoverRef=null;hideTip();renderPanel();}});
@@ -467,17 +467,17 @@ function renderStepPanel(){
 }
 function renderCommitCard(id){
   const st=STEPS[S.i], n=C[id], pinned=S.sel===id;
-  let pre=`commit  ${n.sha}\nparent  ${n.parent?C[n.parent].sha:'(none — root commit)'}`;
+  let pre=`commit  ${n.sha}\nparent  ${n.parent?C[n.parent].sha:'(none: root commit)'}`;
   if(n.parent2)pre+=`\nparent  ${C[n.parent2].sha}`;
   pre+=`\nauthor  you\nmessage ${n.msg}`;
   let note=VIZ.commitNote?(VIZ.commitNote(id,st,S.i)||''):'';
   if(!note){
     if(n.copyOf)
-      note=`<p>A copy of ${C[n.copyOf].code} (<code>${C[n.copyOf].sha}</code>): identical changes, identical message — but the parent differs, so the hash differs. A commit's id covers its content <em>and</em> its entire history.</p>`;
+      note=`<p>A copy of ${C[n.copyOf].code} (<code>${C[n.copyOf].sha}</code>): identical changes, identical message, but the parent differs, so the hash differs. A commit's id covers its content and its entire history.</p>`;
     else if(st.ghost.includes(id))
-      note=`<p>Unreachable — no branch or tag points here anymore. <code>git log</code> won't show it, the reflog still will (~90 days), then garbage collection removes it.</p>`;
+      note=`<p>Unreachable: no branch or tag points here anymore. <code>git log</code> won't show it, the reflog still will (~90 days), then garbage collection removes it.</p>`;
     else if(!n.parent)
-      note=`<p>The root commit — the only one with no parent.</p>`;
+      note=`<p>The root commit, the only one with no parent.</p>`;
   }
   body.innerHTML=`<div class="eyebrow">commit · ${pinned?'pinned':'hovering'}</div>
   <h1 class="t">${n.code} · ${esc(n.msg)}</h1>
@@ -492,7 +492,7 @@ function renderRefCard(name){
   const text=(VIZ.refCards&&VIZ.refCards[name])||
     (name==='HEAD'
       ?`<p>HEAD is “where you are.” Normally it's attached to a branch, and committing moves that branch with you.</p>`
-      :`<p>A branch is just a name pointing at one commit — a 41-byte file at <code>.git/refs/heads/${name}</code>. Nothing about the commits themselves says which branch they're “on.”</p>`);
+      :`<p>A branch is just a name pointing at one commit, a 41-byte file at <code>.git/refs/heads/${name}</code>. Nothing about the commits themselves says which branch they're “on.”</p>`);
   body.innerHTML=`<div class="eyebrow">ref · ${S.selRef?'pinned':'hovering'}</div>
   <h1 class="t">${name}</h1>
   <pre>${name==='HEAD'?'HEAD':'refs/heads/'+name}  →  ${esc(target)}</pre>${text}

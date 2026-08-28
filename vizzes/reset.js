@@ -13,7 +13,7 @@ commits:{
 steps:[
 { t:'Two commits you regret',
   lede:'main is four commits long, and the last two were a mistake.',
-  story:`<p>The parser rewrite (M1) was a dead end and M2 tried to patch it up. You don't want revert commits piled on top — you want main to <mark>act like the last two never happened</mark>.</p>`,
+  story:`<p>The parser rewrite (M1) was a dead end and M2 tried to patch it up. Fix commits piled on top would work, but what you want is for main to <mark>act like the last two never happened</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','M1','M2'], dim:[], ghost:[], halo:[], notes:{},
@@ -22,7 +22,7 @@ steps:[
 
 { t:'The ask: point me back there',
   lede:'Reset means: move my branch to this commit.',
-  story:`<p>That's the entire command. A branch is a pointer, and reset <mark>re-points it — nothing else in history changes</mark>. The flags (<code>--soft</code>, <code>--mixed</code>, <code>--hard</code>) decide what happens to your files, not to the graph.</p>`,
+  story:`<p>That is the whole command: a branch is a pointer, and reset <mark>re-points it and changes nothing else in history</mark>. The flags (<code>--soft</code>, <code>--mixed</code>, <code>--hard</code>) only decide what happens to your files.</p>`,
   cmd:'$ git reset --hard b7a41d2',
   plumbing:`<pre># "back two commits" spellings that mean the same thing:
 $ git reset --hard HEAD~2
@@ -32,7 +32,7 @@ $ git reset --hard b7a41d2</pre>`,
 
 { t:'The pointer walks back',
   lede:'main slides from M2 back to B; HEAD rides along.',
-  story:`<p>No commit was edited or deleted — every sha on screen is unchanged. Git also notes where you were: <mark>ORIG_HEAD still names M2</mark>, so the move is reversible on the spot.</p>`,
+  story:`<p>No commit was edited or deleted, and every sha on screen is unchanged. Git also noted where you were: <mark>ORIG_HEAD still names M2</mark>, so the move is reversible on the spot.</p>`,
   cmd:null,
   plumbing:`<pre># saved automatically before the move:
 #   ORIG_HEAD -> d40b91c
@@ -44,8 +44,8 @@ $ git reset --hard ORIG_HEAD</pre>`,
   refWin:{main:[.15,1.2], HEAD:[.15,1.2]} },
 
 { t:'The strays',
-  lede:'M1 and M2 are unreachable — abandoned, not erased.',
-  story:`<p>The same afterlife <a href="rebase.html">rebase</a> leaves behind: invisible to <code>git log</code>, alive in the reflog for ~90 days. <mark>Committed work is almost never truly lost</mark> — the reflog remembers where every ref has been.</p>`,
+  lede:'M1 and M2 are unreachable now, but they haven’t been erased.',
+  story:`<p>The same afterlife <a href="rebase.html">rebase</a> leaves behind: invisible to <code>git log</code>, alive in the reflog for about 90 days. The reflog remembers where every ref has been, which is why <mark>committed work is almost never truly lost</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog main
 b7a41d2 main@{0}: reset: moving to b7a41d2
@@ -56,8 +56,8 @@ $ git branch rescue d40b91c   # resurrect any time</pre>`,
   ghostWin:{M1:[.1,.9], M2:[.25,1.05]} },
 
 { t:'soft, mixed, hard',
-  lede:'The graph move is identical — the flag picks what your files do.',
-  story:`<p><code>--soft</code> keeps the undone work staged, <code>--mixed</code> (the default) keeps it in your files unstaged, <code>--hard</code> discards it. <mark>Only --hard can cost you uncommitted work</mark> — the committed kind is always in the reflog.</p>`,
+  lede:'The graph move is identical. The flag picks what your files do.',
+  story:`<p><code>--soft</code> keeps the undone work staged, <code>--mixed</code> (the default) keeps it in your files unstaged, <code>--hard</code> discards it. <mark>Only --hard can cost you uncommitted work</mark>. Committed work stays in the reflog.</p>`,
   cmd:`             branch   index     working tree
 --soft       moves    keeps     keeps
 --mixed      moves    resets    keeps
@@ -70,16 +70,16 @@ commitNote(id,st,i){
   if((id==='M1'||id==='M2')&&st.ghost.includes(id))
     return `<p>Unreachable, not deleted: no ref points here anymore, but the object is intact. <code>git branch rescue ${this.commits[id].sha}</code> brings it back until garbage collection (~90 days).</p>`;
   if(id==='B'&&i>=1)
-    return `<p>The reset target — after the move, main says this is the newest thing that ever happened.</p>`;
+    return `<p>The reset target. After the move, main says this is the newest thing that ever happened.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>Reset is the one command whose whole job is moving this pointer — anywhere, forward or back. The commits never move; reachability is what changes.</p>`,
-  HEAD:`<p>Attached to main throughout — <code>git reset</code> moves the branch and HEAD follows, unlike <code>git switch --detach</code>, which moves only HEAD.</p>`,
+  main:`<p>Reset is the one command whose whole job is moving this pointer, anywhere, forward or back. The commits never move. Reachability is what changes.</p>`,
+  HEAD:`<p>Attached to main throughout: <code>git reset</code> moves the branch and HEAD follows, unlike <code>git switch --detach</code>, which moves only HEAD.</p>`,
 },
 refBlurbs:{
-  main:'main — reset re-points this, and only this',
-  HEAD:'HEAD — attached; it follows main wherever reset points it',
+  main:'main: reset re-points this, and only this',
+  HEAD:'HEAD: attached; it follows main wherever reset points it',
 },
 };
 })();

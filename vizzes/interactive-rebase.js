@@ -14,8 +14,8 @@ commits:{
 },
 steps:[
 { t:'A messy branch',
-  lede:'Three commits of wip — one actual feature.',
-  story:`<p>The history you make while working isn't the history worth keeping. Before this branch goes anywhere public, <mark>the mess is yours to rewrite</mark> — nobody else has these commits yet.</p>`,
+  lede:'Three commits of wip, one actual feature.',
+  story:`<p>The history you make while working is rarely the history worth publishing. Before this branch goes anywhere public, <mark>the mess is yours to rewrite</mark>, because nobody else has these commits yet.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','F1','F2','F3'], dim:[], ghost:[], halo:[], notes:{},
@@ -24,14 +24,14 @@ steps:[
 
 { t:'The todo list',
   lede:'Interactive rebase hands you the replay plan as a text file.',
-  story:`<p>Every line is a commit, oldest first; every verb an instruction. Change the verbs, save, quit — <mark>the todo list is the plan</mark>, and git executes it top to bottom.</p>`,
+  story:`<p>Every line is a commit, oldest first, and every verb is an instruction. Change the verbs, save, quit. <mark>Git executes the todo list top to bottom</mark>.</p>`,
   cmd:'$ git rebase -i main',
   plumbing:`<pre>pick   e8127f4 wip: login form
 squash 2b44c1e more wip
 squash 77d05af fix typo
 
-# other verbs: reword, edit, drop —
-# and reordering lines reorders history</pre>`,
+# other verbs: reword, edit, drop
+# reordering lines reorders history</pre>`,
   sub:'faint dashed outline = where the squashed commit will land',
   present:['A','B','F1','F2','F3'], dim:[], ghost:[], halo:['F1','F2','F3'], notes:{},
   future:['SQ'],
@@ -39,7 +39,7 @@ squash 77d05af fix typo
 
 { t:'Three become one',
   lede:'The replays fold into a single new commit on top of main.',
-  story:`<p>Each <code>squash</code> melds a commit into the one before it, and you write one message for the result. <mark>New commit, new hash, clean story</mark> — the same rules as every rebase.</p>`,
+  story:`<p>Each <code>squash</code> melds a commit into the one before it, and you write one message for the result. <mark>The result is a new commit with a new hash</mark>, under the same rules as every rebase.</p>`,
   cmd:null, plumbing:null,
   present:['A','B','F1','F2','F3','SQ'], dim:['F1','F2','F3'], ghost:[], halo:[], notes:{SQ:'all three, squashed'},
   refs:{main:'B', feature:'F3', head:{at:'SQ'}},
@@ -49,9 +49,9 @@ squash 77d05af fix typo
   appear:{SQ:[1.35,1.95]},
   refWin:{HEAD:[1.9,2.5]} },
 
-{ t:'feature catches up; the mess ghosts out',
-  lede:'The pointer jumps; the wip commits become strays.',
-  story:`<p>The published history will say you wrote it clean on the first try. The reflog knows better, for ~90 days. <mark>Tidy before sharing, never after</mark> — after, it's the golden rule again.</p>`,
+{ t:'feature catches up, the mess ghosts out',
+  lede:'The pointer jumps, and the wip commits become strays.',
+  story:`<p>The published history will say you wrote it clean on the first try (the reflog knows better, for about 90 days). <mark>Tidy before sharing</mark>. Afterward, the golden rule applies.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog feature
 51f3a2b feature@{0}: rebase -i (finish)
@@ -63,7 +63,7 @@ squash 77d05af fix typo
 
 { t:'The daily driver',
   lede:'This is the rebase people actually run every day.',
-  story:`<p>Squash the wip, reword the message, drop the debug commit, reorder the fix before the feature. <mark>rebase -i is a history editor</mark> — the same replay engine with you in the director's chair.</p>`,
+  story:`<p>Squash the wip, reword the message, drop the debug commit, reorder the fix before the feature. <mark>rebase -i is a history editor</mark> built on the same replay engine.</p>`,
   cmd:`$ git log --oneline
 51f3a2b (HEAD -> feature) add login form
 b7a41d2 (main) add config
@@ -75,20 +75,20 @@ a1f0c3e init: scaffold`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='SQ')
-    return `<p>One commit carrying all three patches, with the message you chose at the end. Its parent is main's tip — the wip history is simply not part of its ancestry.</p>`;
+    return `<p>One commit carrying all three patches, with the message you chose at the end. Its parent is main's tip. The wip history is simply not part of its ancestry.</p>`;
   if((id==='F1'||id==='F2'||id==='F3')&&st.present.includes('SQ'))
     return `<p>Folded into ${C.SQ.code} (<code>${C.SQ.sha}</code>) along with its siblings. The original survives only as reflog history.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>The base of the replay — untouched, as always. Interactive rebase rewrites your side only.</p>`,
+  main:`<p>The base of the replay, untouched as always. Interactive rebase rewrites your side only.</p>`,
   feature:`<p>Ends the day three commits shorter and one commit better. It only moves at the finish, so --abort is safe right up until then.</p>`,
-  HEAD:`<p>Detaches and follows the todo list as git executes it — with squashes, it pauses for you to write the combined message.</p>`,
+  HEAD:`<p>Detaches and follows the todo list as git executes it. With squashes, it pauses for you to write the combined message.</p>`,
 },
 refBlurbs:{
-  main:'main — the replay base; never moves',
-  feature:'feature — jumps to the tidied commit at the end',
-  HEAD:'HEAD — detached, executing the todo list',
+  main:'main: the replay base; never moves',
+  feature:'feature: jumps to the tidied commit at the end',
+  HEAD:'HEAD: detached, executing the todo list',
 },
 };
 })();

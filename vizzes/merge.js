@@ -16,7 +16,7 @@ commits:{
 },
 steps:[
 { t:'Two branches, one fork',
-  lede:'The same divergence rebase starts from — but this time you stay on main.',
+  lede:'The same divergence rebase starts from, seen from main this time.',
   story:`<p>feature grew F1 and F2 while main collected M1 and M2 (the <a href="rebase.html">rebase animation</a> builds this up step by step). Now you're integrating: HEAD is on main, and <mark>feature is ready to come in</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
@@ -24,9 +24,9 @@ steps:[
   refs:{main:'M2', feature:'F2', head:{on:'main'}},
   appear:{A:[0,.35],B:[.15,.5],M1:[.3,.65],M2:[.45,.8],F1:[.6,.95],F2:[.75,1.1]} },
 
-{ t:'The ask: combine, don’t rewrite',
+{ t:'The ask',
   lede:'Merge means: make one commit that has both histories behind it.',
-  story:`<p>Nothing gets copied and nothing gets a new hash. Git plans a single <mark>new commit with two parents</mark> — one line of descent back through main, one back through feature.</p>`,
+  story:`<p>Nothing gets copied and nothing gets a new hash. Git plans a single <mark>new commit with two parents</mark>: one line of descent back through main, one back through feature.</p>`,
   cmd:'$ git switch main\n$ git merge feature',
   plumbing:`<pre># fast-forward is impossible here: main has its own
 # commits since B, so a real merge commit is needed.
@@ -38,7 +38,7 @@ steps:[
 
 { t:'Three points make a merge',
   lede:'Git compares both tips against the commit where they forked.',
-  story:`<p>The merge base is B — the last commit both sides share. Git takes the diff B→M2 (ours) and the diff B→F2 (theirs) and combines them; <mark>conflicts appear only where the two diffs touch the same lines</mark>.</p>`,
+  story:`<p>The merge base is B, the last commit both sides share. Git takes the diff B→M2 (ours) and the diff B→F2 (theirs) and combines them. <mark>Conflicts appear only where the two diffs touch the same lines</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git merge-base main feature
 b7a41d2                        # B
@@ -50,7 +50,7 @@ b7a41d2                        # B
   refs:{main:'M2', feature:'F2', head:{on:'main'}} },
 
 { t:'A commit with two parents',
-  lede:'The combined result lands as M3 — an ordinary commit, plus one extra parent.',
+  lede:'The combined result lands as M3: an ordinary commit, plus one extra parent.',
   story:`<p>Both torches land in one place: M3's snapshot holds the combined work, and its parent list holds <mark>both M2 and F2</mark>. Every commit that was ever on either branch is now reachable from here.</p>`,
   cmd:null,
   plumbing:`<pre>$ git cat-file -p 9e442af
@@ -63,9 +63,9 @@ parent  f3c56aa              # theirs</pre>`,
            {from:'F2', to:'M3', label:'theirs', win:[.35,1.25]}],
   appear:{M3:[1.15,1.75]} },
 
-{ t:'main moves up; feature doesn’t',
+{ t:'main moves up, feature stays',
   lede:'main advances to M3. feature still points exactly where it did.',
-  story:`<p>No commit changed identity — every sha is the same as before the merge. <mark>Merge adds one commit and moves one pointer</mark>; there are no copies, no strays, nothing for the reflog to rescue.</p>`,
+  story:`<p>No commit changed identity: every sha is the same as before the merge. <mark>Merge adds one commit and moves one pointer</mark>. No copies, no strays.</p>`,
   cmd:null,
   plumbing:`<pre>$ git update-ref refs/heads/main 9e442af
 # feature is untouched; delete it when you're done:
@@ -76,7 +76,7 @@ $ git branch -d feature      # safe: fully merged</pre>`,
 
 { t:'History keeps the fork',
   lede:'The graph stays honest: you can still see there were two lines of work.',
-  story:`<p>That's the trade against <a href="rebase.html">rebase</a>: <mark>a truthful shape instead of a straight line</mark>. Same starting point, opposite philosophy — rebase rewrites your commits to pretend you started from M2; merge records that you didn't.</p>`,
+  story:`<p>Compare the <a href="rebase.html">rebase</a> ending: <mark>merge keeps the true shape</mark>, at the cost of a busier graph. Rebase would have rewritten your commits to pretend you started from M2. Merge writes down what actually happened.</p>`,
   cmd:`$ git log --oneline --graph
 *   9e442af (HEAD -> main) merge feature
 |\\
@@ -94,22 +94,22 @@ $ git branch -d feature      # safe: fully merged</pre>`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='M3')
-    return `<p>The merge commit: an ordinary commit whose parent list has two entries — <code>${C.M2.sha}</code> from main's line and <code>${C.F2.sha}</code> from feature's. Walking history from here reaches every commit of both branches.</p>`;
+    return `<p>The merge commit: an ordinary commit whose parent list has two entries: <code>${C.M2.sha}</code> from main's line and <code>${C.F2.sha}</code> from feature's. Walking history from here reaches every commit of both branches.</p>`;
   if(id==='B'&&i>=1)
     return `<p>The merge base: the last commit both branches share. Both sides' changes are measured against this point.</p>`;
-  if(id==='M2'&&i>=1&&i<=3) return `<p>“Ours” — the tip of the branch you're standing on. It becomes the merge commit's first parent.</p>`;
-  if(id==='F2'&&i>=1&&i<=3) return `<p>“Theirs” — the tip being merged in. It becomes the merge commit's second parent.</p>`;
+  if(id==='M2'&&i>=1&&i<=3) return `<p>“Ours” is the tip of the branch you're standing on. It becomes the merge commit's first parent.</p>`;
+  if(id==='F2'&&i>=1&&i<=3) return `<p>“Theirs” is the tip being merged in. It becomes the merge commit's second parent.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>The integrating branch. It moves once, at the very end — from M2 to the new merge commit. Everything else in the graph keeps its identity.</p>`,
-  feature:`<p>Completely untouched by the merge — it still points at F2 afterward. That's why it's safe to <code>git branch -d feature</code> once merged: its commits are reachable from main.</p>`,
-  HEAD:`<p>Attached to main the whole time. A merge never detaches HEAD — even on conflict, you're still on your branch, fixing files.</p>`,
+  main:`<p>The integrating branch. It moves once, at the very end, from M2 to the new merge commit. Everything else in the graph keeps its identity.</p>`,
+  feature:`<p>Completely untouched by the merge: it still points at F2 afterward. That's why it's safe to <code>git branch -d feature</code> once merged: its commits are reachable from main.</p>`,
+  HEAD:`<p>Attached to main the whole time. A merge never detaches HEAD. Even on conflict, you're still on your branch, fixing files.</p>`,
 },
 refBlurbs:{
-  main:'main — moves once, to the merge commit at the end',
-  feature:'feature — untouched by the merge; still points at F2',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: moves once, to the merge commit at the end',
+  feature:'feature: untouched by the merge; still points at F2',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();

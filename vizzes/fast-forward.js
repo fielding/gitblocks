@@ -12,8 +12,8 @@ commits:{
 },
 steps:[
 { t:'Ahead, not diverged',
-  lede:'feature is strictly ahead of main — main never moved since the fork.',
-  story:`<p>Every commit main has, feature also has: B is an ancestor of F2. There are <mark>no two histories to combine</mark> — one is simply further along than the other.</p>`,
+  lede:'feature is strictly ahead: main never moved after the fork.',
+  story:`<p>Every commit main has, feature also has: B is an ancestor of F2. There are <mark>no two histories to combine</mark>. One is simply further along.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','F1','F2'], dim:[], ghost:[], halo:[], notes:{},
@@ -21,8 +21,8 @@ steps:[
   appear:{A:[0,.4],B:[.2,.6],F1:[.4,.8],F2:[.6,1]} },
 
 { t:'The ask',
-  lede:'It says merge — but there is nothing to combine.',
-  story:`<p>Git finds the merge base first, and here it's B — which is main's own tip. <mark>When your tip is the merge base</mark>, feature's history already contains everything main has, so no merge commit is needed at all.</p>`,
+  lede:'The command says merge, but there is nothing to combine.',
+  story:`<p>Git finds the merge base first. Here it's B, which is also main's own tip. <mark>When your tip is the merge base</mark>, the other branch already contains everything you have, and no merge commit is needed.</p>`,
   cmd:'$ git switch main\n$ git merge feature',
   plumbing:`<pre>$ git merge-base main feature
 b7a41d2            # = main's tip -> fast-forward possible
@@ -34,7 +34,7 @@ Fast-forward</pre>`,
 
 { t:'Fast-forward',
   lede:'main just slides forward along the existing commits.',
-  story:`<p>No new commit, no copies, no second parent — <mark>a pointer moves, and that is the entire operation</mark>. Notice main now points into what looked like “feature's lane”: branches aren't places, just names on commits.</p>`,
+  story:`<p>No new commit, no copies, no second parent: <mark>one pointer moves and the command is done</mark>. main now points into what looked like “feature's lane”, because branches aren't places, just names on commits.</p>`,
   cmd:null,
   plumbing:`<pre># literally all that changed:
 $ git update-ref refs/heads/main f3c56aa
@@ -46,7 +46,7 @@ $ git update-ref refs/heads/main f3c56aa
 
 { t:'Why rebase-then-merge stays linear',
   lede:'After a rebase, the merge is always a fast-forward.',
-  story:`<p>That's the trick behind linear-history workflows: <a href="rebase.html">rebase</a> makes your branch strictly ahead, so the merge degenerates into this pointer slide. Want the fork recorded anyway? <mark><code>git merge --no-ff</code> forces a real merge commit</mark> — see <a href="merge.html">merge</a>.</p>`,
+  story:`<p>Linear-history workflows rely on this: <a href="rebase.html">rebase</a> first, so your branch is strictly ahead and the merge reduces to a pointer slide. To record the fork anyway, <mark><code>git merge --no-ff</code> forces a real merge commit</mark> (see <a href="merge.html">merge</a>).</p>`,
   cmd:`$ git log --oneline
 f3c56aa (HEAD -> main, feature) add sessions
 e8127f4 add login form
@@ -58,18 +58,18 @@ a1f0c3e init: scaffold`,
 ],
 commitNote(id,st,i){
   if(id==='B'&&i>=1)
-    return `<p>Main's tip <em>and</em> the merge base — the coincidence that makes a fast-forward possible. Nothing on main needs preserving; it's all behind feature already.</p>`;
+    return `<p>Main's tip and the merge base at once, which is the coincidence that makes a fast-forward possible. Nothing on main needs preserving. It's all behind feature already.</p>`;
   return '';
 },
 refCards:{
   main:`<p>The only thing this whole operation changes: one pointer, sliding forward along commits that already existed. Its history afterward is exactly feature's history.</p>`,
-  feature:`<p>Doesn't move at all — after the fast-forward both names point at F2. The branch is now fully merged and safe to delete.</p>`,
-  HEAD:`<p>Attached to main throughout; it slides along with the fast-forward like any branch movement.</p>`,
+  feature:`<p>Doesn't move at all. After the fast-forward both names point at F2. The branch is now fully merged and safe to delete.</p>`,
+  HEAD:`<p>Attached to main throughout. It slides along with the fast-forward like any branch movement.</p>`,
 },
 refBlurbs:{
-  main:'main — slides forward along existing commits; nothing else changes',
-  feature:'feature — never moves; afterwards both names share one commit',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: slides forward along existing commits; nothing else changes',
+  feature:'feature: never moves; afterwards both names share one commit',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();

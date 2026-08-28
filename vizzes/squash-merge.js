@@ -16,8 +16,8 @@ commits:{
 },
 steps:[
 { t:'The PR is ready',
-  lede:'Same divergence as merge — but you want one tidy commit on main.',
-  story:`<p>This is GitHub's default <em>“Squash and merge”</em> button. feature's commits are useful history for you, noise for main. <mark>Squash keeps the changes and drops the story</mark>.</p>`,
+  lede:'The same divergence as merge, except you want main to gain exactly one commit.',
+  story:`<p>This is GitHub's default <em>“Squash and merge”</em> button. feature's commit-by-commit history mattered while you worked, but main doesn't need it. <mark>Squash keeps the changes and drops the history</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:ALL, dim:[], ghost:[], halo:[], notes:{B:'fork point'},
@@ -25,8 +25,8 @@ steps:[
   appear:{A:[0,.35],B:[.15,.5],M1:[.3,.65],M2:[.45,.8],F1:[.6,.95],F2:[.75,1.1]} },
 
 { t:'The ask',
-  lede:'Apply everything feature did — as one plain working-tree change.',
-  story:`<p>Unlike a real <a href="merge.html">merge</a>, this plans an ordinary commit with <mark>one parent and no link to feature</mark>. And note the second command is yours: squash stages the changes, you commit them.</p>`,
+  lede:'Apply everything feature did, as one plain working-tree change.',
+  story:`<p>Unlike a real <a href="merge.html">merge</a>, this plans an ordinary commit with <mark>one parent and no link to feature</mark>. The second command is yours to run, because squash only stages the changes.</p>`,
   cmd:'$ git merge --squash feature\n$ git commit -m "add login + sessions (#42)"',
   plumbing:`<pre># = apply diff b7a41d2..f3c56aa to the tree, stage it
 # no merge state, no second parent, no record of feature</pre>`,
@@ -36,8 +36,8 @@ steps:[
   refs:{main:'M2', feature:'F2', head:{on:'main'}} },
 
 { t:'Two commits become one',
-  lede:'S carries all of feature’s changes; its parent list says main-only.',
-  story:`<p>Both patches land in a single block. Check its card: one parent. <mark>Git records no relationship to feature at all</mark> — that's the point, and the price.</p>`,
+  lede:'S carries all of feature’s changes. Its parent list mentions only main.',
+  story:`<p>Both patches land in a single block. Check its card: one parent. <mark>Git records no relationship to feature at all</mark>, which is the point, and also the reason for the next step.</p>`,
   cmd:null, plumbing:null,
   present:[...ALL,'S'], dim:[], ghost:[], halo:[], notes:{S:'feature, squashed'},
   refs:{main:'S', feature:'F2', head:{on:'main'}},
@@ -47,8 +47,8 @@ steps:[
   refWin:{main:[1.8,2.4], HEAD:[1.8,2.4]} },
 
 { t:'The dangling branch',
-  lede:'feature still points at F2 — and git can’t tell it was merged.',
-  story:`<p><code>git branch -d feature</code> will refuse: it checks reachability, and F1/F2 aren't reachable from main. You know better — <mark>delete it with -D once squashed</mark>, or it haunts later merges as duplicate changes.</p>`,
+  lede:'feature still points at F2, and git can’t tell it was merged.',
+  story:`<p><code>git branch -d feature</code> will refuse: it checks reachability, and F1/F2 aren't reachable from main. You know the work landed, so <mark>delete it with -D once squashed</mark>. A squashed branch left around shows up in later merges as duplicate changes.</p>`,
   cmd:null,
   plumbing:`<pre>$ git branch -d feature
 error: the branch 'feature' is not fully merged
@@ -57,8 +57,8 @@ $ git branch -D feature    # you know it landed as 8f31b6d</pre>`,
   refs:{main:'S', feature:'F2', head:{on:'main'}} },
 
 { t:'Three ways to land a branch',
-  lede:'Merge, squash, rebase — same changes, three different histories.',
-  story:`<p><a href="merge.html">Merge</a> keeps the true shape. Squash keeps one clean commit and loses the lineage. <a href="rebase.html">Rebase</a>-then-<a href="fast-forward.html">fast-forward</a> keeps every commit but rewrites them. <mark>Pick per branch, not per religion</mark>.</p>`,
+  lede:'Merge, squash, rebase: same changes, three different histories.',
+  story:`<p><a href="merge.html">Merge</a> keeps the true shape. Squash keeps one clean commit and loses the lineage. <a href="rebase.html">Rebase</a>-then-<a href="fast-forward.html">fast-forward</a> keeps every commit but rewrites them. All three land the same changes; <mark>they differ only in what history claims happened</mark>.</p>`,
   cmd:`merge       true shape       + full history    - busy graph
 squash      one commit       + clean main      - lineage lost
 rebase+ff   linear commits   + readable log    - new hashes`,
@@ -69,20 +69,20 @@ rebase+ff   linear commits   + readable log    - new hashes`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='S')
-    return `<p>All of feature's work in one snapshot — but only one parent (<code>${C.M2.sha}</code>). Unlike a merge commit, nothing here points back at F1 or F2.</p>`;
+    return `<p>All of feature's work in one snapshot, but only one parent (<code>${C.M2.sha}</code>). Unlike a merge commit, nothing here points back at F1 or F2.</p>`;
   if((id==='F1'||id==='F2')&&st.present.includes('S')&&i>=2)
-    return `<p>Its changes live on inside S, but git doesn't know that — no parent link records it. Reachable only through the doomed feature branch.</p>`;
+    return `<p>Its changes live on inside S, but git doesn't know that: no parent link records it. Reachable only through the doomed feature branch.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>Advances to the squash commit like any ordinary commit. main's history stays perfectly linear — that's what the button is selling.</p>`,
+  main:`<p>Advances to the squash commit like any ordinary commit. main's history stays perfectly linear, which is what the button is selling.</p>`,
   feature:`<p>Untouched, and now a trap: git can't prove it merged, so it needs -D to delete, and re-merging it later means duplicate changes.</p>`,
-  HEAD:`<p>Attached to main throughout; the squash ends in a normal commit that you make yourself.</p>`,
+  HEAD:`<p>Attached to main throughout. The squash ends in a normal commit that you make yourself.</p>`,
 },
 refBlurbs:{
-  main:'main — gains one plain commit with feature’s changes',
-  feature:'feature — untouched, unlinked, and ready to be deleted with -D',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: gains one plain commit with feature’s changes',
+  feature:'feature: untouched, unlinked, and ready to be deleted with -D',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();

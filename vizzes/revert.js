@@ -13,8 +13,8 @@ commits:{
 },
 steps:[
 { t:'A bad commit, already shared',
-  lede:'M1 broke things — and teammates already pulled it.',
-  story:`<p>You could <a href="reset.html">reset</a> past it, but M1 left your machine days ago; rewinding now would strand everyone who built on it. <mark>Shared history can't be rewound</mark> — only added to.</p>`,
+  lede:'M1 broke things, and teammates have already pulled it.',
+  story:`<p>You could <a href="reset.html">reset</a> past it, but M1 left your machine days ago, and rewinding would strand everyone who built on it. <mark>Shared history can only be added to</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','M1','M2'], dim:[], ghost:[], halo:[], notes:{M1:'the bad one'},
@@ -23,7 +23,7 @@ steps:[
 
 { t:'The ask: undo forward',
   lede:'Make a new commit whose changes are the exact inverse of M1’s.',
-  story:`<p>Git computes M1's patch and flips it — every add becomes a delete, every delete an add — then applies that to your tip like any other change. <mark>An antidote, not an eraser</mark>.</p>`,
+  story:`<p>Git computes M1's patch and flips it (adds become deletes, deletes become adds), then applies that to your tip like any other change. <mark>The undo is itself just a new commit</mark>.</p>`,
   cmd:'$ git revert c9d3e8f',
   plumbing:`<pre># the unit is a patch, applied backwards:
 #   patch = diff b7a41d2..c9d3e8f   (M1)
@@ -37,7 +37,7 @@ steps:[
 
 { t:'The inverse patch lands',
   lede:'R undoes M1, three commits later.',
-  story:`<p>Same replay machinery as <a href="cherry-pick.html">cherry-pick</a>, just backwards. main and HEAD advance to R like any ordinary commit — <mark>nothing detaches and nothing rewinds</mark>.</p>`,
+  story:`<p>The same replay machinery as <a href="cherry-pick.html">cherry-pick</a>, run backwards. main and HEAD advance to R like any ordinary commit: <mark>nothing detaches and nothing rewinds</mark>.</p>`,
   cmd:null, plumbing:null,
   present:['A','B','M1','M2','R'], dim:[], ghost:[], halo:[], notes:{R:'undoes M1'},
   refs:{main:'R', head:{on:'main'}},
@@ -46,8 +46,8 @@ steps:[
   refWin:{main:[1.6,2.2], HEAD:[1.6,2.2]} },
 
 { t:'History tells the truth',
-  lede:'The mistake and the fix are both on the record — nothing ghosts out.',
-  story:`<p>Compare with <a href="reset.html">reset</a>'s strays: here every commit stays reachable. Anyone who pulled M1 just pulls R on top — <mark>nothing anyone has was rewritten</mark>.</p>`,
+  lede:'The mistake and the fix are both on the record. Nothing ghosts out.',
+  story:`<p>Compare with <a href="reset.html">reset</a>'s strays: here every commit stays reachable. Anyone who pulled M1 just pulls R on top. <mark>Nothing anyone has was rewritten</mark>.</p>`,
   cmd:`$ git log --oneline
 b52f7c1 (HEAD -> main) revert "rewrite parser"
 d40b91c add docs
@@ -60,7 +60,7 @@ a1f0c3e init: scaffold`,
 
 { t:'reset or revert?',
   lede:'One rule of thumb covers it.',
-  story:`<p><mark>Private history → reset. Shared history → revert.</mark> Reset makes the past prettier; revert makes the present correct. When in doubt, revert — it's the one that never breaks anybody else.</p>`,
+  story:`<p><mark>Reset private history, revert shared history.</mark> When in doubt, revert: it never breaks anybody else's clone.</p>`,
   cmd:`reset    moves your branch pointer     private branches
 revert   adds an inverse commit        anything shared`,
   plumbing:null,
@@ -70,18 +70,18 @@ revert   adds an inverse commit        anything shared`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='R')
-    return `<p>An ordinary commit whose diff is M1's (<code>${C.M1.sha}</code>) inverted. One parent, normal hash rules — the "undo" lives entirely in its content.</p>`;
+    return `<p>An ordinary commit whose diff is M1's (<code>${C.M1.sha}</code>) inverted. One parent, normal hash rules. The "undo" lives entirely in its content.</p>`;
   if(id==='M1')
-    return `<p>Still fully reachable and unchanged — revert never touches the original. History shows the mistake honestly, then shows it fixed.</p>`;
+    return `<p>Still fully reachable and unchanged. Revert never touches the original. History shows the mistake honestly, then shows it fixed.</p>`;
   return '';
 },
 refCards:{
   main:`<p>Advances by one commit, exactly as if you'd made any other change. Revert is the undo that works entirely inside git's normal rules.</p>`,
-  HEAD:`<p>Attached to main throughout — a revert is just "apply this inverse patch, then commit here."</p>`,
+  HEAD:`<p>Attached to main throughout. A revert is just "apply this inverse patch, then commit here."</p>`,
 },
 refBlurbs:{
-  main:'main — advances to the antidote commit; nothing rewinds',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: advances to the antidote commit; nothing rewinds',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();

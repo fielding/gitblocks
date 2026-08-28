@@ -16,8 +16,8 @@ commits:{
 },
 steps:[
 { t:'A branch on a branch',
-  lede:'oauth was built on top of api — and api just got rejected.',
-  story:`<p>You stacked your work: api first, oauth on top. Now api is abandoned but oauth is good. A plain <a href="rebase.html">rebase</a> onto main would <mark>drag api's commit along</mark> — you need a more precise cut.</p>`,
+  lede:'oauth was built on top of api, and api just got rejected.',
+  story:`<p>You stacked your work: api first, oauth on top. Now api is abandoned but oauth is still good. A plain <a href="rebase.html">rebase</a> onto main would <mark>drag api's commit along</mark>, so you need a more precise cut.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','M1','P1','Q1','Q2'], dim:[], ghost:[], halo:[], notes:{P1:'superseded'},
@@ -26,20 +26,20 @@ steps:[
 
 { t:'Three arguments, total control',
   lede:'Read it as: take what oauth has beyond api, and replay it on main.',
-  story:`<p><code>--onto main</code> is the new base. <code>api</code> is the old base — everything up to it stays behind. <code>oauth</code> is what to move. <mark>You choose the cut point</mark>, not the merge-base.</p>`,
+  story:`<p><code>--onto main</code> names the new base. <code>api</code> marks the old base, and everything reachable from it stays behind. <code>oauth</code> is what moves. <mark>You choose the cut point yourself</mark> instead of letting the merge-base decide.</p>`,
   cmd:'$ git rebase --onto main api oauth',
   plumbing:`<pre>$ git rev-list --reverse api..oauth   # what moves
 5b17d3e   # Q1
 90cc41a   # Q2
 # P1 is on the api side of the cut: not replayed</pre>`,
   sub:'faint dashed outlines = where the copies will land',
-  present:['A','B','M1','P1','Q1','Q2'], dim:[], ghost:[], halo:['Q1','Q2'], notes:{M1:'new base',P1:'old base — left behind'},
+  present:['A','B','M1','P1','Q1','Q2'], dim:[], ghost:[], halo:['Q1','Q2'], notes:{M1:'new base',P1:'old base, left behind'},
   future:['Q1p','Q2p'],
   refs:{main:'M1', api:'P1', oauth:'Q2', head:{on:'oauth'}} },
 
-{ t:'Replay — skipping the dead base',
+{ t:'Replay, skipping the dead base',
   lede:'Q1 and Q2 land on main. P1 stays behind.',
-  story:`<p>Same copy machinery as every rebase — <mark>new parents, new hashes</mark> — but the cut you chose left api's commit out of the flight plan entirely.</p>`,
+  story:`<p>The same copy machinery as every rebase (<mark>new parents, new hashes</mark>), except the cut you chose left api's commit out entirely.</p>`,
   cmd:null, plumbing:null,
   present:['A','B','M1','P1','Q1','Q2','Q1p','Q2p'], dim:['Q1','Q2'], ghost:[], halo:[], notes:{Q1p:'copy of Q1',Q2p:'copy of Q2'},
   refs:{main:'M1', api:'P1', oauth:'Q2', head:{at:'Q2p'}},
@@ -48,12 +48,12 @@ steps:[
   appear:{Q1p:[.95,1.55], Q2p:[1.25,1.85]},
   refWin:{HEAD:[1.8,2.4]} },
 
-{ t:'oauth catches up; the originals ghost out',
-  lede:'The pointer jumps to the copies; Q1 and Q2 become strays.',
-  story:`<p>Same epilogue as every rebase: no ref reaches the originals now, and the reflog remembers them for ~90 days. api still holds P1 — <mark>delete that branch and its dead end goes too</mark>.</p>`,
+{ t:'oauth catches up, the originals ghost out',
+  lede:'The pointer jumps to the copies, and Q1 and Q2 become strays.',
+  story:`<p>The same epilogue as every rebase: no ref reaches the originals now, and the reflog remembers them for about 90 days. api still holds P1, so <mark>deleting that branch takes its dead end along</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git branch -d api
-error: not fully merged      # of course — it never landed
+error: not fully merged      # right: it never landed
 $ git branch -D api          # goodbye, sketch</pre>`,
   present:['A','B','M1','P1','Q1','Q2','Q1p','Q2p'], dim:[], ghost:['Q1','Q2'], halo:[], notes:{},
   refs:{main:'M1', api:'P1', oauth:'Q2p', head:{on:'oauth'}},
@@ -62,7 +62,7 @@ $ git branch -D api          # goodbye, sketch</pre>`,
 
 { t:'The precision tool',
   lede:'--onto moves any slice of history to any new base.',
-  story:`<p>Transplant a branch off a dead parent, split a stack, move a range between release lines — <mark>if rebase is a replay, --onto picks the reel and the projector</mark>.</p>`,
+  story:`<p>Transplant a branch off a dead parent, split a stack, move a range between release lines. <mark>--onto works anywhere you can name a new base, an old base, and what moves</mark>.</p>`,
   cmd:`$ git log --oneline oauth
 c4d81f9 (HEAD -> oauth) oauth tests
 6e02b7f add oauth
@@ -75,22 +75,22 @@ a1f0c3e init: scaffold`,
 ],
 commitNote(id,st,i){
   if(id==='P1')
-    return `<p>The old base — deliberately left out of the replay. Still reachable through the api branch until you delete it.</p>`;
+    return `<p>The old base, deliberately left out of the replay. Still reachable through the api branch until you delete it.</p>`;
   if(id==='M1'&&i>=1)
     return `<p>The new base: <code>--onto main</code> resolves to main's tip, and the copies build from here.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>Only names the landing zone — --onto never moves the branch you're rebasing onto.</p>`,
+  main:`<p>Only names the landing zone. --onto never moves the branch you're rebasing onto.</p>`,
   api:`<p>The rejected experiment. It marks the cut point (everything reachable from it stays behind) and keeps P1 alive until you delete it.</p>`,
   oauth:`<p>The branch being transplanted: it ends up pointing at the copies, its history now reading main → oauth with api gone from under it.</p>`,
   HEAD:`<p>Detaches and rides the copies during the replay, exactly like a plain rebase, then reattaches to oauth.</p>`,
 },
 refBlurbs:{
-  main:'main — the landing zone; never moves',
-  api:'api — the abandoned base and the cut point',
-  oauth:'oauth — the branch being transplanted',
-  HEAD:'HEAD — rides the copies, then reattaches to oauth',
+  main:'main: the landing zone; never moves',
+  api:'api: the abandoned base and the cut point',
+  oauth:'oauth: the branch being transplanted',
+  HEAD:'HEAD: rides the copies, then reattaches to oauth',
 },
 };
 })();

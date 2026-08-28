@@ -16,8 +16,8 @@ commits:{
 },
 steps:[
 { t:'One commit, over there',
-  lede:'main needs the session fix — but not the half-done login form.',
-  story:`<p>F2 has exactly what you want; F1 isn't ready to ship. Merging or rebasing would bring both. <mark>Cherry-pick takes one commit's changes</mark> and applies them where you stand.</p>`,
+  lede:'main needs the session fix. The half-done login form can stay behind.',
+  story:`<p>F2 has exactly what you want and F1 isn't ready to ship, so merging or rebasing would bring too much. <mark>Cherry-pick takes one commit's changes</mark> and applies them where you stand.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:ALL, dim:[], ghost:[], halo:[], notes:{},
@@ -26,7 +26,7 @@ steps:[
 
 { t:'The ask',
   lede:'“Replay what F2 changed, right here on top of main.”',
-  story:`<p>Git computes the diff F1→F2 — that one commit's change and nothing else — and prepares to apply it on M2. <mark>F2 itself will not move</mark>; nothing on feature is touched.</p>`,
+  story:`<p>Git computes the diff between F1 and F2 (that one commit's change, nothing else) and prepares to apply it on M2. <mark>F2 itself will not move</mark>, and nothing on feature is touched.</p>`,
   cmd:'$ git switch main\n$ git cherry-pick f3c56aa',
   plumbing:`<pre># the unit being picked is a CHANGE, not a snapshot:
 #   patch = diff e8127f4..f3c56aa   (F1 -> F2)
@@ -38,7 +38,7 @@ steps:[
 
 { t:'Replay F2 → F2′',
   lede:'The change lands as a brand-new commit with a new hash.',
-  story:`<p>Same patch, same message — different parent, so a different id. Sound familiar? <mark>A cherry-pick is a one-commit rebase</mark>, and a <a href="rebase.html">rebase</a> is cherry-picks in a loop. main commits directly, so HEAD stays attached and rides along.</p>`,
+  story:`<p>Same patch, same message, different parent, so a different id. <mark>A cherry-pick is a one-commit rebase</mark>, and a <a href="rebase.html">rebase</a> is cherry-picks in a loop. main commits directly, so HEAD stays attached.</p>`,
   cmd:null,
   plumbing:`<pre># conflicts work like any replay:
 #   fix files -> git add -> git cherry-pick --continue
@@ -52,7 +52,7 @@ steps:[
 
 { t:'Now it exists twice',
   lede:'The same change is now two different commits.',
-  story:`<p>feature still holds the original; main holds the copy. If feature gets merged later, git compares <em>patches</em>, not hashes, and usually skips the duplicate — but <mark>history will honestly show it landed twice</mark>.</p>`,
+  story:`<p>feature keeps the original and main gets the copy. If feature merges later, git compares patches rather than hashes and usually skips the duplicate. <mark>History will still show the change landing twice</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git patch-id   # same patch-id, different sha
 f3c56aa -> 8d02…e1   (original, on feature)
@@ -63,7 +63,7 @@ f3c56aa -> 8d02…e1   (original, on feature)
 
 { t:'When to reach for it',
   lede:'Hotfixes, backports, rescuing one good commit from a dead branch.',
-  story:`<p>Cherry-pick shines when you want <mark>a change without its branch</mark>. If you catch yourself picking many commits in order, that's a rebase — let git run the loop for you.</p>`,
+  story:`<p>Cherry-pick is for when you want <mark>a change without its branch</mark>. If you catch yourself picking many commits in order, that's a rebase. Let git run the loop for you.</p>`,
   cmd:`$ git log --oneline main
 4c81d20 (HEAD -> main) fix session bug
 d40b91c bump deps
@@ -77,22 +77,22 @@ a1f0c3e init: scaffold`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='F2'&&st.present.includes('F2p'))
-    return `<p>The original — fully intact and still reachable from feature. Its change now also lives on main as <code>${C.F2p.sha}</code>.</p>`;
+    return `<p>The original, fully intact and still reachable from feature. Its change now also lives on main as <code>${C.F2p.sha}</code>.</p>`;
   if(id==='F1')
-    return `<p>The commit you deliberately left behind — this is the whole reason to cherry-pick instead of merging feature.</p>`;
+    return `<p>The commit you deliberately left behind, which is the whole reason to cherry-pick instead of merging feature.</p>`;
   if(id==='M2'&&i>=1)
     return `<p>Where you stood when you picked: the copy is built directly on top of this commit.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>Your current branch. Because cherry-pick commits directly onto it, main advances to the new copy as soon as the pick lands — no separate “catch up” step like a rebase has.</p>`,
-  feature:`<p>The donor branch. Cherry-pick only reads from it; it never moves, and F1 stays safely unpublished on it.</p>`,
-  HEAD:`<p>Attached to main the whole time — a cherry-pick is just “apply this patch, then commit here,” and committing moves the branch you're on.</p>`,
+  main:`<p>Your current branch. Because cherry-pick commits directly onto it, main advances to the new copy as soon as the pick lands. There's no separate “catch up” step like a rebase has.</p>`,
+  feature:`<p>The donor branch. Cherry-pick only reads from it. It never moves, and F1 stays safely unpublished on it.</p>`,
+  HEAD:`<p>Attached to main the whole time. A cherry-pick is just “apply this patch, then commit here,” and committing moves the branch you're on.</p>`,
 },
 refBlurbs:{
-  main:'main — advances to the copy the moment the pick lands',
-  feature:'feature — the donor branch; cherry-pick never moves it',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: advances to the copy the moment the pick lands',
+  feature:'feature: the donor branch; cherry-pick never moves it',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();

@@ -12,8 +12,8 @@ commits:{
 },
 steps:[
 { t:'One commit too soon',
-  lede:'You just committed the login form — and forgot the stylesheet.',
-  story:`<p>The commit is fine, just incomplete, and it hasn't left your machine. Piling on a "fix: add forgotten file" commit works — but <mark>amend can make it as if you never forgot</mark>.</p>`,
+  lede:'You just committed the login form and forgot the stylesheet.',
+  story:`<p>The commit is fine, just incomplete, and it hasn't left your machine. A "fix: add forgotten file" commit would work, but <mark>amend can make it as if you never forgot</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:['A','B','T1'], dim:[], ghost:[], halo:[], notes:{},
@@ -21,8 +21,8 @@ steps:[
   appear:{A:[0,.4],B:[.25,.65],T1:[.5,.9]} },
 
 { t:'The ask',
-  lede:'Amend doesn’t edit the tip — it builds a replacement.',
-  story:`<p>Git takes T1's changes plus what you just staged and writes a brand-new commit with <mark>the same parent as T1</mark>. Editing in place isn't possible: the content is part of the hash.</p>`,
+  lede:'Amend builds a replacement tip rather than editing the old one.',
+  story:`<p>Git takes T1's changes plus what you just staged and writes a brand-new commit with <mark>the same parent as T1</mark>. Editing in place is impossible, because the content is part of the hash.</p>`,
   cmd:'$ git add style.css\n$ git commit --amend',
   plumbing:`<pre># message-only fix:  git commit --amend -m "better words"
 # keep the message:  git commit --amend --no-edit</pre>`,
@@ -32,8 +32,8 @@ steps:[
   refs:{main:'T1', head:{on:'main'}} },
 
 { t:'Replace, don’t edit',
-  lede:'T1′ lands beside T1 — same parent, new hash.',
-  story:`<p>main and HEAD jump straight across; nothing was ever "modified." <mark>Amend is a one-commit rebase</mark> whose new base happens to equal the old one.</p>`,
+  lede:'T1′ lands beside T1 with the same parent and a new hash.',
+  story:`<p>main and HEAD jump straight across. Nothing was ever "modified." <mark>Amend is a one-commit rebase</mark> whose new base happens to equal the old one.</p>`,
   cmd:null, plumbing:null,
   present:['A','B','T1','T1p'], dim:['T1'], ghost:[], halo:[], notes:{T1p:'copy of T1, completed'},
   refs:{main:'T1p', head:{on:'main'}},
@@ -42,8 +42,8 @@ steps:[
   refWin:{main:[1.5,2.1], HEAD:[1.5,2.1]} },
 
 { t:'The old tip is a stray',
-  lede:'T1 is unreachable — the reflog keeps it for ~90 days.',
-  story:`<p>And the rule that follows: <mark>never amend a commit you've pushed</mark>. Teammates would hold T1 while you hold T1′ — the same split <a href="rebase.html">rebase</a>'s golden rule warns about, one commit big.</p>`,
+  lede:'T1 is unreachable. The reflog keeps it for about 90 days.',
+  story:`<p>The rule that follows: <mark>never amend a commit you've pushed</mark>. Teammates would hold T1 while you hold T1′, the same split <a href="rebase.html">rebase</a>'s golden rule warns about, one commit big.</p>`,
   cmd:`$ git log --oneline
 3d90f2a (HEAD -> main) add login form
 b7a41d2 add config
@@ -58,16 +58,16 @@ e8127f4 main@{1}: commit: add login form   # still here</pre>`,
 commitNote(id,st,i){
   const C=this.commits;
   if(id==='T1'&&st.present.includes('T1p'))
-    return `<p>The abandoned original. Note it shares a parent with its replacement — amend doesn't stack a fix on top, it starts over from the same spot.</p>`;
+    return `<p>The abandoned original. It shares a parent with its replacement: amend doesn't stack a fix on top, it starts over from the same spot.</p>`;
   return '';
 },
 refCards:{
-  main:`<p>Jumps sideways, not forward: from the old tip to its replacement. History length is unchanged — that's the whole appeal.</p>`,
-  HEAD:`<p>Attached to main throughout; the amend commits directly on your branch.</p>`,
+  main:`<p>Jumps sideways, not forward: from the old tip to its replacement. History length is unchanged, which is the whole appeal.</p>`,
+  HEAD:`<p>Attached to main throughout. The amend commits directly on your branch.</p>`,
 },
 refBlurbs:{
-  main:'main — jumps sideways to the replacement tip',
-  HEAD:'HEAD — attached to main throughout',
+  main:'main: jumps sideways to the replacement tip',
+  HEAD:'HEAD: attached to main throughout',
 },
 };
 })();
