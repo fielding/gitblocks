@@ -98,10 +98,21 @@ body.embed #econtrols{display:flex}
 .halo{animation:halo 1.6s ease-in-out infinite}
 @media (prefers-reduced-motion: reduce){.halo{animation:none}}
 @media (max-width:640px){
+  #top{flex-wrap:wrap;padding:14px 0 10px;row-gap:8px}
   #brand .bs{display:none}
   #controls{gap:5px}
   button.ctl{padding:4px 8px;font-size:11px}
-  #canvasWrap{height:clamp(300px,min(54vh,100vh - 360px),520px)}
+  #btnReplay{display:none}
+  .vgroup{gap:10px}
+  .nvg{width:64px;font-size:10px}
+  .nv{padding:3px 8px;font-size:12px}
+  #vizrow{gap:9px}
+  #canvasWrap{height:clamp(300px,min(58vh,100vh - 330px),520px)}
+  #legend{flex-wrap:wrap;gap:8px 14px;font-size:11px;right:16px}
+  #rail .title{font-size:11.5px}
+  #ghint{font-size:10.5px;padding:5px 10px;max-width:88%;text-align:center}
+  .hero iframe{height:330px}
+  #tlog{min-height:110px;max-height:180px}
 }
 a.bt{text-decoration:none}
 a.bt:hover{text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
@@ -140,3 +151,5 @@ body.embed #term{display:none}
 #foot a{color:var(--ink-2)}
 #ghint{position:absolute;left:50%;transform:translateX(-50%);top:12px;background:var(--face);border:1.2px solid var(--ink);border-radius:8px;padding:6px 13px;font-size:11.5px;color:var(--ink);pointer-events:none;opacity:.95;transition:opacity .5s}
 #ghint.gone{opacity:0}
+body.embed #rail{max-width:calc(100% - 130px)}
+@media (max-width:640px){body.embed #cap{max-width:70%}}

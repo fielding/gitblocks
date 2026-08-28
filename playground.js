@@ -10,6 +10,7 @@ let repo={
   branches:{main:'B'},
   tags:{},
   head:{on:'main'},
+  remote:null, remoteBranch:null, tracking:{}, unfetched:[], limbo:[],
 };
 let meta={A:{depth:0,lane:0}, B:{depth:1,lane:0}};
 let children={A:1,B:0};
@@ -53,9 +54,11 @@ function reachableFrom(starts){
 }
 const isAncestor=(a,b)=>reachableFrom([b]).has(a);
 function unreachableIds(){
-  const tips=[...Object.values(repo.branches), ...Object.values(repo.tags), headTarget()];
+  const tips=[...Object.values(repo.branches), ...Object.values(repo.tags),
+              ...Object.values(repo.tracking||{}), headTarget()];
   const ok=reachableFrom(tips);
-  return Object.keys(repo.commits).filter(id=>!ok.has(id));
+  const hidden=new Set([...(repo.unfetched||[]),...(repo.limbo||[])]);
+  return Object.keys(repo.commits).filter(id=>!ok.has(id)&&!hidden.has(id));
 }
 function mkSha(){
   for(;;){
@@ -71,6 +74,7 @@ function resolveRef(tok){
   if(base==='HEAD')id=headTarget();
   else if(repo.branches[base]!==undefined)id=repo.branches[base];
   else if(repo.tags[base]!==undefined)id=repo.tags[base];
+  else if(repo.tracking&&repo.tracking[base]!==undefined)id=repo.tracking[base];
   else{
     const hits=Object.keys(repo.commits).filter(k=>k===base||V.commits[k].sha.startsWith(base.toLowerCase()));
     if(hits.length===1)id=hits[0]; else return null;
@@ -96,12 +100,12 @@ function chainBetween(anc,desc){ // [anc,...,desc] along parent links, or null
 
 /* ---------- visual bookkeeping ---------- */
 let addedThisCmd=[];
-function newCommit({msg,parents,fam,code,copyOf}){
+function newCommit({msg,parents,fam,code,copyOf,who:whoOpt}){
   seq++;
   const id='S'+seq;
   const depth=parents.length?Math.max(...parents.map(p=>meta[p].depth))+1:0;
   // lanes belong to branches: a branch keeps its row; new branches get a new one
-  const who=repo.head.on??null;
+  const who=whoOpt!==undefined?whoOpt:(repo.head.on??null);
   let lane;
   if(who!==null&&branchLane[who]!==undefined)lane=branchLane[who];
   else if(parents.length&&(laneOwner[meta[parents[0]].lane]===undefined||laneOwner[meta[parents[0]].lane]===who))lane=meta[parents[0]].lane;
@@ -121,7 +125,7 @@ function newCommit({msg,parents,fam,code,copyOf}){
 function snap(line){
   hist.push({repo:structuredClone(repo),meta:structuredClone(meta),children:{...children},
              branchLane:{...branchLane},laneOwner:{...laneOwner},occupied:{...occupied},
-             nextLane,seq,shaN,line});
+             nextLane,seq,shaN,line,stepsLen:V.steps.length});
   addedThisCmd=[];
   cmdHistory.push(line);
 }
@@ -129,16 +133,20 @@ function refSnapshot(){
   const r={};
   for(const b in repo.branches)r[b]=repo.branches[b];
   for(const g in repo.tags)r[g]=repo.tags[g];
+  for(const g in (repo.tracking||{}))r[g]=repo.tracking[g];
   r.head=repo.head.on?{on:repo.head.on}:{at:repo.head.at};
   return r;
 }
 function pushStep(o){
-  V.branches=Object.keys(repo.branches);
+  V.branches=[...Object.keys(repo.branches),...Object.keys(repo.tracking||{})];
   V.tags=Object.keys(repo.tags);
+  const hidden=new Set([...(repo.unfetched||[]),...(repo.limbo||[])]);
   const cmd=curLine?('$ '+curLine+(outBuf&&outBuf.length?'\n'+outBuf.join('\n'):'')):null;
   V.steps.push({
     t:o.t, lede:o.lede||'', story:o.story||'', cmd, plumbing:null,
-    present:Object.keys(V.commits), dim:[], ghost:unreachableIds(), halo:o.halo||[], notes:o.notes||{},
+    present:Object.keys(V.commits).filter(id=>!hidden.has(id)),
+    dim:[], ghost:unreachableIds(), halo:o.halo||[], notes:o.notes||{},
+    future:(repo.unfetched&&repo.unfetched.length)?[...repo.unfetched]:undefined,
     refs:refSnapshot(), ...(o.anim||{}),
   });
   if(!replaying)window.gotoStep(V.steps.length-1);
@@ -176,6 +184,8 @@ const HELP=`sandbox git — a real-enough repo with no files (so merges never co
   git rebase <upstream>            git rebase --onto <new> <old>
   git cherry-pick <ref>            git revert <ref>
   git reset [--soft|--mixed|--hard] <ref>
+  git remote add origin            git push [--force]
+  git fetch    git pull [--rebase]  teammate commit -m "msg"
   git tag [name|-d name]           git branch -m [old] new
   git log [--all]   git show <ref>   git status   git reflog
   refs: names, shas, tags, HEAD, HEAD~2, main^ …
@@ -186,6 +196,7 @@ function currentFam(){ return repo.head.on==='main'?'paper':repo.head.on?'blue':
 function decorate(id){
   const d=[];
   for(const g in repo.tags)if(repo.tags[g]===id)d.push('tag: '+g);
+  for(const g in (repo.tracking||{}))if(repo.tracking[g]===id)d.push(g);
   if(headTarget()===id)d.push(repo.head.on?`HEAD -> ${repo.head.on}`:'HEAD');
   for(const b in repo.branches)if(repo.branches[b]===id&&b!==repo.head.on)d.push(b);
   else if(repo.branches[b]===id&&b===repo.head.on&&!d.length)d.push(b);
@@ -503,6 +514,145 @@ function cmdReflog(){
   if(cmdHistory.length>12)say(`… (${cmdHistory.length-12} more)`);
 }
 
+const rbName=()=>repo.remoteBranch;
+const trackKey=()=>'origin/'+repo.remoteBranch;
+function cmdRemote(args,line){
+  if(!args.length){ say(repo.remote?'origin (simulated — no network, same rules)':'(no remotes — git remote add origin)'); return; }
+  if(args[0]==='add'){
+    const name=args[1];
+    if(name!=='origin'){sayErr("sandbox: only 'origin' here");return;}
+    if(repo.remote){sayErr('error: remote origin already exists');return;}
+    if(!repo.head.on){sayErr('sandbox: attach to a branch first');return;}
+    snap(line);
+    repo.remoteBranch=repo.head.on;
+    repo.remote={[repo.remoteBranch]:repo.branches[repo.remoteBranch]};
+    repo.tracking={[trackKey()]:repo.branches[repo.remoteBranch]};
+    say(`origin now mirrors ${repo.remoteBranch} at ${V.commits[repo.branches[repo.remoteBranch]].sha}`);
+    say('# the dashed origin/'+repo.remoteBranch+' tag is your BOOKMARK of the server, not the server');
+    pushStep({t:'git remote add origin',
+      lede:`origin/${repo.remoteBranch} appears: your last known position of the server.`,
+      anim:{refWin:{[trackKey()]:[.15,.7]}}});
+    return;
+  }
+  sayErr("usage: git remote add origin");
+}
+function cmdTeammate(args,line){
+  if(!repo.remote){sayErr('no remote yet — git remote add origin first');return;}
+  let msg='teammate work'; const mi=args.indexOf('-m');
+  if(mi>-1&&args[mi+1])msg=args[mi+1];
+  snap(line);
+  const rb=rbName();
+  const id=newCommit({msg,parents:[repo.remote[rb]],fam:'sage',who:'origin/'+rb});
+  repo.remote[rb]=id;
+  repo.unfetched.push(id);
+  say('# somewhere else, a teammate pushes to origin.');
+  say('# your clone has no idea — origin/'+rb+" hasn't moved. (git fetch)");
+  pushStep({t:'a teammate pushes',
+    lede:'The faint sketch is a commit on origin your clone has not heard about.',});
+}
+function cmdFetch(args,line){
+  if(!repo.remote){sayErr('no remote yet — git remote add origin first');return;}
+  const rb=rbName(), tk=trackKey();
+  if(!repo.unfetched.length&&repo.tracking[tk]===repo.remote[rb]){say('Already up to date.');return;}
+  snap(line);
+  const arrived=[...repo.unfetched];
+  const old=repo.tracking[tk];
+  repo.unfetched=[];
+  repo.tracking[tk]=repo.remote[rb];
+  const appear={}; arrived.forEach((id,i)=>appear[id]=[.15+i*.3,.75+i*.3]);
+  const path=chainBetween(old,repo.remote[rb]);
+  say(`From origin (simulated)\n   ${V.commits[old].sha}..${V.commits[repo.remote[rb]].sha}  ${rb} -> origin/${rb}`);
+  say('# your branch did not move. neither did your files. fetch never touches them');
+  pushStep({t:'git fetch',
+    lede:`${arrived.length} commit${arrived.length===1?'':'s'} arrive; only the bookmark moves.`,
+    anim:{appear,
+      ...(path?{refPath:{[tk]:path}}:{}),
+      refWin:{[tk]:[arrived.length?.6:.15, arrived.length?.6+arrived.length*.3+.6:.9]}}});
+}
+function cmdPush(args,line){
+  if(!repo.remote){sayErr('no remote yet — git remote add origin first');return;}
+  const rb=rbName(), tk=trackKey();
+  const force=args.includes('--force')||args.includes('-f')||args.includes('--force-with-lease');
+  if(repo.head.on!==rb){sayErr(`sandbox: origin only tracks '${rb}' — switch back to push`);return;}
+  const local=repo.branches[rb], remoteTip=repo.remote[rb];
+  if(local===remoteTip&&!repo.unfetched.length){say('Everything up-to-date');return;}
+  const behindOrDiverged=repo.unfetched.length>0||!isAncestor(remoteTip,local);
+  if(behindOrDiverged&&!force){
+    sayErr(`! [rejected]  ${rb} -> ${rb} (non-fast-forward)`);
+    sayErr('hint: the remote has work you do not have. fetch, integrate, then push.');
+    return;
+  }
+  snap(line);
+  if(behindOrDiverged){
+    // force: whatever origin had beyond your history is simply gone
+    repo.limbo.push(...repo.unfetched);
+    repo.unfetched=[];
+    say(`+ ${V.commits[remoteTip].sha}...${V.commits[local].sha} ${rb} -> ${rb} (forced update)`);
+    say("# anything origin had that you didn't is gone. this is why force-pushing shared branches ends friendships");
+  }else{
+    say(`   ${V.commits[remoteTip].sha}..${V.commits[local].sha}  ${rb} -> ${rb}`);
+  }
+  const old=repo.tracking[tk];
+  repo.remote[rb]=local;
+  repo.tracking[tk]=local;
+  const path=chainBetween(old,local);
+  pushStep({t:'git push'+(force?' --force':''),
+    lede:force?'origin now says whatever you say. hope nobody was standing on the old history.'
+              :`origin/${rb} catches up to you — the server now has your commits.`,
+    anim:path?{refPath:{[tk]:path},refWin:{[tk]:[.15,1.1]}}:{refWin:{[tk]:[.15,.9]}}});
+}
+function cmdPull(args,line){
+  if(!repo.remote){sayErr('no remote yet — git remote add origin first');return;}
+  const rb=rbName(), tk=trackKey();
+  if(repo.head.on!==rb){sayErr(`sandbox: origin only tracks '${rb}'`);return;}
+  const wantRebase=args.includes('--rebase');
+  const hadNew=repo.unfetched.length>0;
+  if(!hadNew&&repo.tracking[tk]===repo.remote[rb]&&isAncestor(repo.remote[rb],repo.branches[rb])){
+    say('Already up to date.');return;
+  }
+  say('# pull = fetch + '+(wantRebase?'rebase':'merge')+', back to back:');
+  if(hadNew||repo.tracking[tk]!==repo.remote[rb])cmdFetch([], 'git fetch   # (pull, part 1)');
+  const local=repo.branches[rb], target=repo.tracking[tk];
+  curLine=line; outBuf=[];
+  if(local===target||isAncestor(target,local)){say('Already up to date.');return;}
+  snap(line);
+  if(isAncestor(local,target)){
+    const path=chainBetween(local,target);
+    repo.branches[rb]=target;
+    say(`Updating ${V.commits[local].sha}..${V.commits[target].sha}\nFast-forward`);
+    pushStep({t:'git pull'+(wantRebase?' --rebase':''),
+      lede:`Fast-forward: ${rb} slides up to the bookmark.`,
+      anim:path?{refPath:{[rb]:path,HEAD:path},refWin:{[rb]:[.15,1.1],HEAD:[.15,1.1]}}:{refWin:{[rb]:[.15,.9],HEAD:[.15,.9]}}});
+    return;
+  }
+  if(wantRebase){
+    const skip=reachableFrom([target]);
+    const range=[...reachableFrom([local])].filter(id=>!skip.has(id)).sort((a,b)=>meta[a].depth-meta[b].depth);
+    if(range.some(id=>parentsOf(id).length>1)){sayErr('sandbox: pull --rebase over merges is not supported');hist.pop();cmdHistory.pop();return;}
+    let tip=target; const packets=[],appear={};
+    range.forEach((src,i)=>{
+      const id=newCommit({msg:V.commits[src].msg,parents:[tip],fam:'rose',code:V.commits[src].code+'′',copyOf:src});
+      packets.push({from:src,to:id,label:'replay '+V.commits[src].code,win:[.15+i*.35,1.05+i*.35]});
+      appear[id]=[.95+i*.35,1.55+i*.35];
+      tip=id;
+    });
+    repo.branches[rb]=tip;
+    const dur=1.05+(range.length-1)*.35;
+    say(`Successfully rebased ${range.length} commit${range.length===1?'':'s'} onto origin/${rb}.`);
+    pushStep({t:'git pull --rebase',
+      lede:'Your commits replay on top of what arrived — linear history, new hashes.',
+      anim:{packets,appear,refWin:{[rb]:[dur+.4,dur+1],HEAD:[dur+.4,dur+1]}}});
+    return;
+  }
+  const id=newCommit({msg:`merge origin/${rb}`,parents:[local,target],fam:'sage'});
+  repo.branches[rb]=id;
+  say(`Merge made by the 'ort' strategy. (no files, no conflicts here)`);
+  pushStep({t:'git pull',
+    lede:'What arrived merges into your line: one new commit, two parents.',
+    anim:{packets:[{from:local,to:id,label:'yours',win:[.15,1.05]},{from:target,to:id,label:'theirs',win:[.35,1.25]}],
+          appear:{[id]:[1.15,1.75]},refWin:{[rb]:[1.7,2.3],HEAD:[1.7,2.3]}}});
+}
+
 /* ---------- share ---------- */
 const b64e=s=>btoa(unescape(encodeURIComponent(s))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const b64d=s=>decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/'))));
@@ -522,6 +672,12 @@ function run(line){
   const argv=tokenize(line);
   const c0=argv[0];
   if(c0==='help'){say(HELP);return;}
+  if(c0==='teammate'){
+    if(!replaying&&window.GitBlocks&&GitBlocks.stop){GitBlocks.stop();V.liveTerm=true;}
+    curLine=line; outBuf=[];
+    try{cmdTeammate(argv.slice(1),line);}finally{curLine=null;outBuf=null;}
+    return;
+  }
   if(c0==='clear'){tlog.innerHTML='';return;}
   if(c0==='share'){share();return;}
   if(c0==='undo'){
@@ -530,7 +686,8 @@ function run(line){
     for(const id of Object.keys(V.commits))if(!h.repo.commits[id]){delete V.commits[id];delete meta[id];}
     repo=h.repo; meta=h.meta; children=h.children; nextLane=h.nextLane; seq=h.seq; shaN=h.shaN;
     branchLane=h.branchLane; laneOwner=h.laneOwner; occupied=h.occupied;
-    cmdHistory.pop(); V.steps.pop(); V.branches=Object.keys(repo.branches);
+    cmdHistory.pop(); V.steps.length=h.stepsLen;
+    V.branches=[...Object.keys(repo.branches),...Object.keys(repo.tracking||{})];
     say('undid: '+h.line);
     window.gotoStep(V.steps.length-1);
     return;
@@ -556,8 +713,10 @@ function run(line){
       case 'reflog': cmdReflog(); break;
       case 'status': cmdStatus(); break;
       case 'init': say('already initialized — the sandbox starts with two commits'); break;
-      case 'push': case 'pull': case 'fetch':
-        say(`no network in the sandbox — see the fetch-pull animation for how syncing works`); break;
+      case 'remote': cmdRemote(rest,line); break;
+      case 'push': cmdPush(rest,line); break;
+      case 'fetch': cmdFetch(rest,line); break;
+      case 'pull': cmdPull(rest,line); break;
       case 'stash': case 'bisect':
         say(`git ${sub} isn't in the sandbox (yet)`); break;
       default: sayErr(`git: '${sub??''}' is not a sandbox command — try 'help'`);
