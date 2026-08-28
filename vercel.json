@@ -1,4 +1,17 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "gitblocks-one.vercel.app"
+        }
+      ],
+      "destination": "https://git.redstone.university/:path*",
+      "permanent": true
+    }
+  ]
 }

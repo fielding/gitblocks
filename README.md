@@ -1,5 +1,7 @@
 # gitblocks
 
+**Live: [git.redstone.university](https://git.redstone.university)** — a [Redstone University](https://redstone.university) companion.
+
 git, block by block — animated, isometric walkthroughs of what git commands
 actually do. Like RxMarbles, but for git: commits are blocks that never move,
 refs are tags that do, and every animation is a shareable, embeddable URL.
