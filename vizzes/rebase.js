@@ -159,7 +159,7 @@ commitNote(id,st,i){
   if(id==='B'&&i>=3)
     return `<p>The merge-base: the last commit main and feature share. Rebase replays everything after this point.</p>`;
   if(id==='M2'&&!st.ghost.includes(id))
-    return `<p>The tip of main — the base the copies are built on. Note that main itself never moves during the whole rebase.</p>`;
+    return `<p>The tip of main, the base the copies are built on. main itself never moves during the whole rebase.</p>`;
   return '';
 },
 refCards:{

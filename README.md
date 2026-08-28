@@ -1,6 +1,6 @@
 # gitblocks
 
-**git, block by block** — animated, isometric walkthroughs of what git commands
+**git, block by block**: animated, isometric walkthroughs of what git commands
 *actually* do, plus a live sandbox where you type the commands yourself.
 
 **Live: [git.redstone.university](https://git.redstone.university)** · a
@@ -9,7 +9,7 @@
 ![git rebase, mid-replay](og/rebase.png)
 
 Like RxMarbles was for Rx: no prose walls, no man pages, just the mental model,
-animated. One rule does most of the teaching — **commits are blocks that never
+animated. One rule does most of the teaching: **commits are blocks that never
 move**. Refs are tags that do. A change in flight is a redstone torch. Because
 the geometry forbids motion, the animations can't lie: rebase has to look like
 copying, reset has to look like a pointer abandoning blocks, and merge has to
@@ -39,8 +39,8 @@ is an open-ended repo with a real terminal. Every command animates the blocks:
 - `cherry-pick`, `revert`, `reset` (`--soft`/`--mixed`/`--hard`)
 - `log`, `status`, refs like `HEAD~2`, `main^`, sha prefixes
 - aliases: `g`, `c`, `co`, `sw`, `br`, `l`, `s`, `cp`
-- `undo`, `help`, and `share` — which copies a link that **replays your whole
-  session, typed out character by character, on a loop**, until whoever opened
+- `undo`, `help`, and `share`, which copies a link that **replays your whole
+  session, typed out character by character, on a loop** until whoever opened
   it types a command and takes over
 
 It's a teaching model, not real git: there are no files, so merges never
@@ -60,24 +60,24 @@ URLs are the product:
 ```
 
 - sandbox `share` links (`/playground?s=…`) encode the command history and
-  replay deterministically — same shas, same layout, every time
+  replay deterministically: same shas, same layout, every time
 
 ## How it's built
 
 No frameworks, no libraries, no build step. Two classic `<script>` tags per
 page; the only external requests are two Google Fonts. It runs from `file://`.
 
-- `gitblocks.js` / `gitblocks.css` — the shared engine: a hand-rolled 2:1
+- `gitblocks.js` / `gitblocks.css` - the shared engine: a hand-rolled 2:1
   isometric SVG renderer (`P(gx,gy,z) = [(gx−gy)·36, (gx+gy)·18 − z]`),
   step tweens on `requestAnimationFrame`, ref tags, the terminal, embed mode
-- `vizzes/<name>.js` — one data file per animation: commits, steps, copy
-- `playground.js` — the sandbox: an in-browser git model (plain objects),
+- `vizzes/<name>.js` - one data file per animation: commits, steps, copy
+- `playground.js` - the sandbox: an in-browser git model (plain objects),
   deterministic so `?s=` replays are exact
-- `<name>.html` — thin pages: fonts + engine + data
+- `<name>.html` - thin pages: fonts + engine + data
 
 The visual language is borrowed from the
 [redstone-university](https://github.com/fielding/redstone-university) render
-pipeline — paper/ink, pastel block families, schematic redstone-dust wires.
+pipeline: paper/ink, pastel block families, schematic redstone-dust wires.
 The terminal wears the [Human++](https://github.com/fielding/human-plus-plus)
 palette on warm charcoal.
 
