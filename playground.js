@@ -8,6 +8,7 @@
 let repo={
   commits:{A:{parents:[]}, B:{parents:['A']}},
   branches:{main:'B'},
+  tags:{},
   head:{on:'main'},
 };
 let meta={A:{depth:0,lane:0}, B:{depth:1,lane:0}};
@@ -52,7 +53,7 @@ function reachableFrom(starts){
 }
 const isAncestor=(a,b)=>reachableFrom([b]).has(a);
 function unreachableIds(){
-  const tips=[...Object.values(repo.branches), headTarget()];
+  const tips=[...Object.values(repo.branches), ...Object.values(repo.tags), headTarget()];
   const ok=reachableFrom(tips);
   return Object.keys(repo.commits).filter(id=>!ok.has(id));
 }
@@ -69,6 +70,7 @@ function resolveRef(tok){
   let id=null; const base=m[1];
   if(base==='HEAD')id=headTarget();
   else if(repo.branches[base]!==undefined)id=repo.branches[base];
+  else if(repo.tags[base]!==undefined)id=repo.tags[base];
   else{
     const hits=Object.keys(repo.commits).filter(k=>k===base||V.commits[k].sha.startsWith(base.toLowerCase()));
     if(hits.length===1)id=hits[0]; else return null;
@@ -126,11 +128,13 @@ function snap(line){
 function refSnapshot(){
   const r={};
   for(const b in repo.branches)r[b]=repo.branches[b];
+  for(const g in repo.tags)r[g]=repo.tags[g];
   r.head=repo.head.on?{on:repo.head.on}:{at:repo.head.at};
   return r;
 }
 function pushStep(o){
   V.branches=Object.keys(repo.branches);
+  V.tags=Object.keys(repo.tags);
   const cmd=curLine?('$ '+curLine+(outBuf&&outBuf.length?'\n'+outBuf.join('\n'):'')):null;
   V.steps.push({
     t:o.t, lede:o.lede||'', story:o.story||'', cmd, plumbing:null,
@@ -172,14 +176,16 @@ const HELP=`sandbox git — a real-enough repo with no files (so merges never co
   git rebase <upstream>            git rebase --onto <new> <old>
   git cherry-pick <ref>            git revert <ref>
   git reset [--soft|--mixed|--hard] <ref>
-  git log [--all]       git status
-  refs: names, shas, HEAD, HEAD~2, main^ …
+  git tag [name|-d name]           git branch -m [old] new
+  git log [--all]   git show <ref>   git status   git reflog
+  refs: names, shas, tags, HEAD, HEAD~2, main^ …
 aliases: g=git · c=commit · co=checkout · sw=switch · br=branch · l=log · s=status · cp=cherry-pick
 also:  help · undo · clear · share  (copies a link that replays this session)`;
 
 function currentFam(){ return repo.head.on==='main'?'paper':repo.head.on?'blue':'sage'; }
 function decorate(id){
   const d=[];
+  for(const g in repo.tags)if(repo.tags[g]===id)d.push('tag: '+g);
   if(headTarget()===id)d.push(repo.head.on?`HEAD -> ${repo.head.on}`:'HEAD');
   for(const b in repo.branches)if(repo.branches[b]===id&&b!==repo.head.on)d.push(b);
   else if(repo.branches[b]===id&&b===repo.head.on&&!d.length)d.push(b);
@@ -230,6 +236,20 @@ function cmdBranch(args,line){
     say(`Deleted branch ${name} (was ${V.commits[repo.branches[name]].sha}).`);
     delete repo.branches[name];
     pushStep({t:'git branch '+args[0],lede:`${name} is gone — any commits only it could reach are strays now.`});
+    return;
+  }
+  if(args[0]==='-m'||args[0]==='-M'){
+    const [oldName,newName]=args.length>2?[args[1],args[2]]:[repo.head.on,args[1]];
+    if(!oldName||repo.branches[oldName]===undefined){sayErr(`error: branch '${oldName??''}' not found`);return;}
+    if(!newName||repo.branches[newName]!==undefined||!/^[A-Za-z][\w\/.-]*$/.test(newName)){sayErr(`fatal: bad new name '${newName??''}'`);return;}
+    snap(line);
+    repo.branches[newName]=repo.branches[oldName]; delete repo.branches[oldName];
+    if(branchLane[oldName]!==undefined){branchLane[newName]=branchLane[oldName]; delete branchLane[oldName];}
+    for(const l in laneOwner)if(laneOwner[l]===oldName)laneOwner[l]=newName;
+    if(repo.head.on===oldName)repo.head={on:newName};
+    say(`renamed ${oldName} -> ${newName} (same pointer, new name)`);
+    pushStep({t:'git branch -m',lede:`${oldName} is now ${newName}. The commit it points at didn't blink.`,
+      anim:{refWin:{[newName]:[.15,.7]}}});
     return;
   }
   const name=args[0];
@@ -425,6 +445,7 @@ function cmdRevert(args,line){
 }
 
 function cmdLog(args){
+  if(args.includes('--graph'))say('# the graph is the big colorful thing above ↑');
   const all=args.includes('--all');
   const tips=all?[...Object.values(repo.branches),headTarget()]:[headTarget()];
   const ids=[...reachableFrom(tips)].sort((a,b)=>meta[b].depth-meta[a].depth||(a<b?-1:1));
@@ -434,6 +455,52 @@ function cmdLog(args){
 function cmdStatus(){
   say(repo.head.on?`On branch ${repo.head.on}`:`HEAD detached at ${V.commits[headTarget()].sha}`);
   say('nothing to commit (this sandbox has no working tree)');
+}
+
+function cmdTag(args,line){
+  if(!args.length){
+    const names=Object.keys(repo.tags);
+    if(!names.length)say('(no tags yet — git tag <name> plants one where HEAD is)');
+    else names.sort().forEach(n=>say(n));
+    return;
+  }
+  if(args[0]==='-d'){
+    const n=args[1];
+    if(repo.tags[n]===undefined){sayErr(`error: tag '${n??''}' not found`);return;}
+    snap(line);
+    say(`Deleted tag '${n}' (was ${V.commits[repo.tags[n]].sha})`);
+    delete repo.tags[n];
+    pushStep({t:'git tag -d '+n,lede:`The ${n} tag is gone; the commit it marked is unbothered.`});
+    return;
+  }
+  const name=args[0];
+  if(!/^[A-Za-z][\w\/.-]*$/.test(name)||repo.tags[name]!==undefined||repo.branches[name]!==undefined){sayErr(`fatal: tag '${name}' is invalid or already taken`);return;}
+  const at=args[1]?resolveRef(args[1]):headTarget();
+  if(!at){sayErr(`fatal: not a valid object name: '${args[1]}'`);return;}
+  snap(line);
+  repo.tags[name]=at;
+  say(`tag '${name}' -> ${V.commits[at].sha}`);
+  pushStep({t:'git tag '+name,lede:`A tag is a ref that never moves — ${name} will point at ${V.commits[at].code} forever.`,
+    anim:{refWin:{[name]:[.15,.7]}}});
+}
+function cmdShow(args){
+  const id=resolveRef(args[0]??'HEAD');
+  if(!id){sayErr(`fatal: bad revision '${args[0]??''}'`);return;}
+  const c=V.commits[id];
+  say(`commit ${c.sha}${decorate(id)}`);
+  const ps=parentsOf(id);
+  if(ps.length)say('parent '+ps.map(p=>V.commits[p].sha).join(', '));
+  say('        '+c.msg);
+}
+function cmdReflog(){
+  if(!cmdHistory.length){say('(nothing yet — the reflog fills as you work)');return;}
+  const states=[...hist.slice(1).map(h=>h.repo), repo];
+  const t=s=>s.head.on?s.branches[s.head.on]:s.head.at;
+  let n=0;
+  for(let j=cmdHistory.length-1;j>=0&&n<12;j--,n++){
+    say(`${V.commits[t(states[j])].sha} HEAD@{${n}}: ${cmdHistory[j]}`);
+  }
+  if(cmdHistory.length>12)say(`… (${cmdHistory.length-12} more)`);
 }
 
 /* ---------- share ---------- */
@@ -484,11 +551,14 @@ function run(line){
       case 'reset': cmdReset(rest,line); break;
       case 'revert': cmdRevert(rest,line); break;
       case 'log': cmdLog(rest); break;
+      case 'tag': cmdTag(rest,line); break;
+      case 'show': cmdShow(rest); break;
+      case 'reflog': cmdReflog(); break;
       case 'status': cmdStatus(); break;
       case 'init': say('already initialized — the sandbox starts with two commits'); break;
       case 'push': case 'pull': case 'fetch':
         say(`no network in the sandbox — see the fetch-pull animation for how syncing works`); break;
-      case 'stash': case 'tag': case 'bisect':
+      case 'stash': case 'bisect':
         say(`git ${sub} isn't in the sandbox (yet)`); break;
       default: sayErr(`git: '${sub??''}' is not a sandbox command — try 'help'`);
     }

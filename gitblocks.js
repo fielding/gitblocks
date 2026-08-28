@@ -143,7 +143,7 @@ if(bootAC)bootAC.abort();
 bootAC=new AbortController();
 const SIG=bootAC.signal;
 VIZ_REG[VIZ.meta.name]=VIZ;
-const C=VIZ.commits, STEPS=VIZ.steps, BRANCHES=()=>VIZ.branches||['main','feature'];
+const C=VIZ.commits, STEPS=VIZ.steps, BRANCHES=()=>VIZ.branches||['main','feature'], TAGS=()=>VIZ.tags||[];
 const blockColor=n=>FAM[n.fam||'paper'];
 const parentsOf=n=>[n.parent,n.parent2].filter(Boolean);
 
@@ -341,6 +341,11 @@ function restTags(refs){
     const [x,y]=topC(cid), lvl=stack[cid]||0; stack[cid]=lvl+1;
     t[b]={x,y:y-34-lvl*24,commit:cid};
   }
+  for(const g of TAGS()){
+    const cid=refs[g]; if(cid===undefined||cid===null)continue;
+    const [x,y]=topC(cid), lvl=stack[cid]||0; stack[cid]=lvl+1;
+    t[g]={x,y:y-34-lvl*24,commit:cid,tag:true};
+  }
   const hc=refs.head.on?refs[refs.head.on]:refs.head.at;
   const [x,y]=topC(hc), lvl=stack[hc]||0; stack[hc]=lvl+1;
   t.HEAD={x,y:y-34-lvl*24,commit:hc,detached:!refs.head.on};
@@ -351,7 +356,7 @@ function drawTags(st){
   const cur=restTags(st.refs);
   const prev=restTags(STEPS[Math.max(0,S.i-1)].refs);
   const settled={};
-  const NAMES=[...BRANCHES(),'HEAD'];
+  const NAMES=[...BRANCHES(),...TAGS(),'HEAD'];
   for(const name of NAMES){
     if(!cur[name])continue;
     const w=(st.refWin&&st.refWin[name])||null;
@@ -380,7 +385,7 @@ function drawTags(st){
       }
     }
     settled[name]=u>=1;
-    g.appendChild(tagBox(name,x,y,name==='HEAD',cur[name].detached,st,alpha));
+    g.appendChild(tagBox(name,x,y,name==='HEAD',cur[name].detached,st,alpha,cur[name].tag));
   }
   // stems: connect settled tags downward per commit
   const byCommit={};
@@ -400,12 +405,12 @@ function drawTags(st){
   }
   return g;
 }
-function tagBox(name,x,y,isHead,detached,st,alpha){
+function tagBox(name,x,y,isHead,detached,st,alpha,isTag){
   const label=isHead?'HEAD':name;
   const w=label.length*7.9+15;
   const g=el('g',{style:'cursor:pointer',opacity:alpha==null?1:alpha});
   const isRemote=!isHead&&name.includes('/');
-  const r=el('rect',{x:x-w/2,y,width:w,height:16,fill:isHead?REDF:PAPER_B,stroke:isHead?REDF:INK,'stroke-width':1.2});
+  const r=el('rect',{x:x-w/2,y,width:w,height:16,fill:isHead?REDF:(isTag?FAM.amber:PAPER_B),stroke:isHead?REDF:INK,'stroke-width':1.2});
   if(isHead&&detached){r.setAttribute('stroke',PAPER_B);r.setAttribute('stroke-dasharray','3 2');}
   if(isRemote)r.setAttribute('stroke-dasharray','3 2');
   g.appendChild(r);
@@ -417,7 +422,7 @@ function tagBox(name,x,y,isHead,detached,st,alpha){
   }
   const defaults={HEAD:'HEAD — where you are; detached = pointing at a commit, not a branch'};
   const blurb=(VIZ.refBlurbs&&VIZ.refBlurbs[isHead?'HEAD':name])||defaults[isHead?'HEAD':name]
-    ||`${name} — a branch is just a movable pointer to one commit`;
+    ||(isTag?`${name} — a tag: a ref that never moves`:`${name} — a branch is just a movable pointer to one commit`);
   g.addEventListener('mouseenter',e=>{S.hoverRef=isHead?'HEAD':name;showTip(e,blurb);renderPanel();});
   g.addEventListener('mousemove',moveTip);
   g.addEventListener('mouseleave',()=>{if(S.hoverRef){S.hoverRef=null;hideTip();renderPanel();}});
@@ -705,6 +710,22 @@ if(EMBED){
   document.getElementById('enx').onclick=()=>window.nextStep();
 }
 gotoStep(clamp((parseInt(Q.get('step'))||1)-1,0,STEPS.length-1));
+if(!EMBED){
+  let seen=false; try{seen=!!localStorage.getItem('gb_hinted');}catch(e){}
+  if(!seen){
+    const hint=document.createElement('div');
+    hint.id='ghint';
+    hint.textContent='← → to step through · hover any block to inspect it';
+    document.getElementById('canvasWrap').appendChild(hint);
+    const dismiss=()=>{try{localStorage.setItem('gb_hinted','1');}catch(e){}
+      hint.classList.add('gone'); setTimeout(()=>hint.remove(),600);
+      document.removeEventListener('keydown',dismiss,true);
+      document.removeEventListener('pointerdown',dismiss,true);};
+    setTimeout(dismiss,9000);
+    document.addEventListener('keydown',dismiss,true);
+    document.addEventListener('pointerdown',dismiss,true);
+  }
+}
 if(Q.has('loop')){S.loop=true;setAuto(true);}
 else if(Q.has('autoplay'))setAuto(true);
 else if(!VIZ.liveTerm&&!Q.has('noplay')&&!REDUCED){S.loop=true;setAuto(true);}
