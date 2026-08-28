@@ -131,7 +131,7 @@ function skeleton(meta){
     <div id="legend" aria-hidden="true"></div>
     <div id="tip"></div>
   </div>
-  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span></div>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
+  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
   <footer id="foot">every animation on this page embeds anywhere — append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it.</footer>
 </div>`;
