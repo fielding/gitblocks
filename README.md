@@ -28,7 +28,6 @@ Pure static files, no build step. Works from `file://` or any static host.
   step animations, ref tags, panel, embed mode)
 - `vizzes/<name>.js` — one data file per animation: commits, steps, copy
 - `<name>.html` — thin page: fonts + engine + data
-- `embed-demo.html` — an animation iframed inline in a fake blog post
 
 ## Sharing & embedding
 
