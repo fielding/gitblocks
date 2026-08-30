@@ -14,7 +14,7 @@ steps:[
 { t:'Your clone has a bookmark',
   lede:'origin/main is just your last known position of the server.',
   story:`<p>Two pointers on one commit. main is yours. origin/main is your memory of theirs, and it updates <mark>only when you talk to the server</mark>. Git never checks the network on its own.</p>`,
-  sub:'dashed tag = remote-tracking ref, your bookmark of the server',
+  sub:'dashed tag = remote-tracking branch, your bookmark of the server',
   cmd:null, plumbing:null,
   present:['A','B'], dim:[], ghost:[], halo:[], notes:{},
   refs:{main:'B', 'origin/main':'B', head:{on:'main'}},
@@ -34,7 +34,7 @@ Your branch is up to date with 'origin/main'.
 
 { t:'fetch: download, don’t touch',
   lede:'The new commits arrive, and only the bookmark moves.',
-  story:`<p>main didn't move, and neither did your files. <mark>Fetch is always safe</mark>: it downloads objects and advances origin/main, nothing else.</p>`,
+  story:`<p>main didn't move, and neither did your files. <mark>Fetch is always safe</mark>: it only downloads objects and updates remote-tracking branches like origin/main.</p>`,
   cmd:'$ git fetch',
   plumbing:`<pre>From github.com:you/repo
    b7a41d2..d40b91c  main -> origin/main
@@ -77,7 +77,7 @@ commitNote(id,st,i){
 },
 refCards:{
   main:`<p>Your branch. Fetch never touches it. It only moves when you merge, rebase, or pull (which is just those two commands in a trench coat).</p>`,
-  'origin/main':`<p>A remote-tracking ref: read-only from your side, updated by fetch/pull/push. It's how git compares your position to the server's without a network call.</p>`,
+  'origin/main':`<p>A remote-tracking branch: read-only from your side, updated by fetch/pull/push. It's how git compares your position to the server's without a network call.</p>`,
   HEAD:`<p>Attached to main throughout. Syncing is about the two branch pointers, and HEAD just rides your side of it.</p>`,
 },
 refBlurbs:{

@@ -54,7 +54,7 @@ squash 77d05af fix typo
   story:`<p>The published history will say you wrote it clean on the first try (the reflog knows better, for 30 days by default). <mark>Tidy before sharing</mark>. Afterward, the golden rule applies.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog feature
-51f3a2b feature@{0}: rebase -i (finish)
+51f3a2b feature@{0}: rebase (finish): refs/heads/feature onto b7a41d2
 77d05af feature@{1}: commit: fix typo    # all still here</pre>`,
   present:['A','B','F1','F2','F3','SQ'], dim:[], ghost:['F1','F2','F3'], halo:[], notes:{},
   refs:{main:'B', feature:'SQ', head:{on:'feature'}},

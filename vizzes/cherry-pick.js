@@ -43,7 +43,7 @@ steps:[
   plumbing:`<pre># conflicts work like any replay:
 #   fix files -> git add -> git cherry-pick --continue
 #   or back out: git cherry-pick --abort
-# -x appends "(cherry picked from f3c56aa)" to the message</pre>`,
+# -x appends "(cherry picked from commit f3c56aa…)"</pre>`,
   present:[...ALL,'F2p'], dim:[], ghost:[], halo:[], notes:{F2p:'copy of F2'},
   refs:{main:'F2p', feature:'F2', head:{on:'main'}},
   packet:{from:'F2', to:'F2p', label:'changes in F2', win:[.15,1.15]},

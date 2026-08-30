@@ -9,7 +9,7 @@ commits:{
   B: {code:'B', sha:'b7a41d2', msg:'add config',              parent:'A',  gx:4,  gy:2},
   M1:{code:'M1',sha:'c9d3e8f', msg:'rewrite parser',          parent:'B',  gx:8,  gy:2, fam:'amber'},
   M2:{code:'M2',sha:'d40b91c', msg:'add docs',                parent:'M1', gx:12, gy:2},
-  R: {code:'R', sha:'b52f7c1', msg:'revert "rewrite parser"', parent:'M2', gx:16, gy:2, fam:'sage'},
+  R: {code:'R', sha:'b52f7c1', msg:'Revert "rewrite parser"', parent:'M2', gx:16, gy:2, fam:'sage'},
 },
 steps:[
 { t:'A bad commit, already shared',
@@ -49,7 +49,7 @@ steps:[
   lede:'The mistake and the fix are both on the record. Nothing ghosts out.',
   story:`<p>Compare with <a href="reset.html">reset</a>'s strays: here every commit stays reachable. Anyone who pulled M1 just pulls R on top. <mark>Nothing anyone has was rewritten</mark>.</p>`,
   cmd:`$ git log --oneline
-b52f7c1 (HEAD -> main) revert "rewrite parser"
+b52f7c1 (HEAD -> main) Revert "rewrite parser"
 d40b91c add docs
 c9d3e8f rewrite parser
 b7a41d2 add config

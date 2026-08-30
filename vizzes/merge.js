@@ -12,7 +12,7 @@ commits:{
   M2: {code:'M2', sha:'d40b91c', msg:'bump deps',       parent:'M1', gx:12, gy:2},
   F1: {code:'F1', sha:'e8127f4', msg:'add login form',  parent:'B',  gx:9,  gy:8, fam:'blue'},
   F2: {code:'F2', sha:'f3c56aa', msg:'add sessions',    parent:'F1', gx:13, gy:8, fam:'blue'},
-  M3: {code:'M3', sha:'9e442af', msg:'merge feature',   parent:'M2', parent2:'F2', gx:16, gy:2, fam:'sage'},
+  M3: {code:'M3', sha:'9e442af', msg:"Merge branch 'feature'",   parent:'M2', parent2:'F2', gx:16, gy:2, fam:'sage'},
 },
 steps:[
 { t:'Two branches, one fork',
@@ -78,7 +78,7 @@ $ git branch -d feature      # safe: fully merged</pre>`,
   lede:'The graph stays honest: you can still see there were two lines of work.',
   story:`<p>Compare the <a href="rebase.html">rebase</a> ending: <mark>merge keeps the true shape</mark>, at the cost of a busier graph. Rebase would have rewritten your commits to pretend you started from M2. Merge writes down what actually happened.</p>`,
   cmd:`$ git log --oneline --graph
-*   9e442af (HEAD -> main) merge feature
+*   9e442af (HEAD -> main) Merge branch 'feature'
 |\\
 | * f3c56aa (feature) add sessions
 | * e8127f4 add login form

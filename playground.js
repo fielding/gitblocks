@@ -213,7 +213,7 @@ function cmdCommit(args,line){
     snap(line);
     const id=newCommit({msg:msg??V.commits[old].msg,parents:[...op],fam:'rose',code:V.commits[old].code+'′',copyOf:old});
     if(repo.head.on)repo.branches[repo.head.on]=id; else repo.head.at=id;
-    say(`[${repo.head.on||'detached HEAD'} ${V.commits[id].sha}] ${V.commits[id].msg} (amend)`);
+    say(`[${repo.head.on||'detached HEAD'} ${V.commits[id].sha}] ${V.commits[id].msg}`);
     pushStep({t:'git commit --amend',lede:`${V.commits[old].code} replaced by ${V.commits[id].code}: same parent, new hash.`,
       story:`<p>The old tip is abandoned rather than edited (see <a href="amend.html">amend</a>).</p>`,
       anim:{packet:{from:old,to:id,label:'changes + fixes',win:[.1,.9]},appear:{[id]:[.8,1.4]},
@@ -241,7 +241,7 @@ function cmdBranch(args,line){
     if(!repo.branches[name]){sayErr(`error: branch '${name}' not found`);return;}
     if(name===repo.head.on){sayErr(`error: cannot delete '${name}': checked out`);return;}
     if(args[0]==='-d'&&!isAncestor(repo.branches[name],headTarget())){
-      sayErr(`error: the branch '${name}' is not fully merged\nhint: use -D if you're sure (its commits may become strays)`);return;
+      sayErr(`error: the branch '${name}' is not fully merged\nhint: If you are sure you want to delete it, run 'git branch -D ${name}'`);return;
     }
     snap(line);
     say(`Deleted branch ${name} (was ${V.commits[repo.branches[name]].sha}).`);
@@ -258,7 +258,7 @@ function cmdBranch(args,line){
     if(branchLane[oldName]!==undefined){branchLane[newName]=branchLane[oldName]; delete branchLane[oldName];}
     for(const l in laneOwner)if(laneOwner[l]===oldName)laneOwner[l]=newName;
     if(repo.head.on===oldName)repo.head={on:newName};
-    say(`renamed ${oldName} -> ${newName} (same pointer, new name)`);
+    say(`# renamed ${oldName} -> ${newName} (real git prints nothing here)`);
     pushStep({t:'git branch -m',lede:`${oldName} is now ${newName}. It points at the same commit as before.`,
       anim:{refWin:{[newName]:[.15,.7]}}});
     return;
@@ -310,7 +310,7 @@ function cmdSwitch(args,line,viaCheckout){
   if(at&&viaCheckout){
     snap(line);
     repo.head={at};
-    say(`Note: switching to '${name}' detaches HEAD (see the detached-head animation)`);
+    say(`Note: switching to '${name}'.\nYou are in 'detached HEAD' state.\nHEAD is now at ${V.commits[at].sha} ${V.commits[at].msg}\n# the full warning is explained in the detached-head animation`);
     pushStep({t:'git checkout '+name,lede:`Checked out a commit rather than a branch: HEAD is detached at ${V.commits[at].code}.`,
       anim:{refWin:{HEAD:[.15,.85]}}});
     return;
@@ -330,7 +330,7 @@ function cmdMerge(args,line){
     snap(line);
     const path=chainBetween(ours,target);
     repo.branches[repo.head.on]=target;
-    say(`Updating ${V.commits[ours].sha}..${V.commits[target].sha}\nFast-forward (no new commit, just the pointer)`);
+    say(`Updating ${V.commits[ours].sha}..${V.commits[target].sha}\nFast-forward\n# no new commit, just the pointer`);
     pushStep({t:'git merge '+tok,lede:`Fast-forward: ${repo.head.on} slides along existing commits to ${V.commits[target].code}.`,
       anim:{refPath:{[repo.head.on]:path,HEAD:path},refWin:{[repo.head.on]:[.15,1.2],HEAD:[.15,1.2]}}});
     return;
@@ -339,15 +339,15 @@ function cmdMerge(args,line){
   if(squash){
     const id=newCommit({msg:`squash '${tok}'`,parents:[ours],fam:'peach'});
     repo.branches[repo.head.on]=id;
-    say(`Squash commit created as ${V.commits[id].sha} (the sandbox commits it for you)\nnote: no parent link to '${tok}'; see squash-merge`);
+    say(`Squash commit -- not updating HEAD\n# real git stops here for you to commit; the sandbox commits it:\n[${repo.head.on} ${V.commits[id].sha}] ${V.commits[id].msg}\n# no parent link to '${tok}'; see squash-merge`);
     pushStep({t:'git merge --squash',lede:`All of ${tok}'s changes as one plain commit: one parent, lineage dropped.`,
       anim:{packets:[{from:target,to:id,label:`all of ${tok}`,win:[.15,1.05]}],appear:{[id]:[.95,1.55]},
             refWin:{[repo.head.on]:[1.5,2.1],HEAD:[1.5,2.1]}}});
     return;
   }
-  const id=newCommit({msg:`merge ${tok}`,parents:[ours,target],fam:'sage'});
+  const id=newCommit({msg:`Merge branch '${tok}'`,parents:[ours,target],fam:'sage'});
   repo.branches[repo.head.on]=id;
-  say(`Merge made by the 'ort' strategy. (no files here, so merges never conflict)`);
+  say(`Merge made by the 'ort' strategy.\n# no files here, so merges never conflict`);
   pushStep({t:'git merge '+tok,lede:`${V.commits[id].code} has two parents: your line and ${tok}'s. Nothing was rewritten.`,
     anim:{packets:[{from:ours,to:id,label:'ours',win:[.15,1.05]},{from:target,to:id,label:'theirs',win:[.35,1.25]}],
           appear:{[id]:[1.15,1.75]},refWin:{[repo.head.on]:[1.7,2.3],HEAD:[1.7,2.3]}}});
@@ -368,11 +368,11 @@ function cmdRebase(args,line){
   const range=[...reachableFrom([ours])].filter(id=>!skip.has(id)).sort((a,b)=>meta[a].depth-meta[b].depth);
   if(range.some(id=>parentsOf(id).length>1)){sayErr('sandbox: rebasing merge commits is not supported (real git: --rebase-merges)');return;}
   if(!range.length){
-    if(ours===base){say('Current branch is up to date.');return;}
+    if(ours===base){say('Current branch '+repo.head.on+' is up to date.');return;}
     snap(line);
     const path=chainBetween(ours,base);
     repo.branches[repo.head.on]=base;
-    say('Fast-forwarded to '+(baseTok||'upstream')+'.');
+    say('Successfully rebased and updated refs/heads/'+repo.head.on+'.\n# nothing to replay: a fast-forward');
     pushStep({t:'git rebase '+baseTok,lede:'Nothing to replay, so the branch just fast-forwards.',
       anim:path?{refPath:{[repo.head.on]:path,HEAD:path},refWin:{[repo.head.on]:[.15,1.2],HEAD:[.15,1.2]}}:{refWin:{[repo.head.on]:[.15,.9],HEAD:[.15,.9]}}});
     return;
@@ -386,7 +386,7 @@ function cmdRebase(args,line){
     const id=newCommit({msg:V.commits[first].msg,parents:[base],fam:'rose',code:'S′'});
     repo.branches[repo.head.on]=id;
     say(`Successfully rebased and updated refs/heads/${repo.head.on}.`);
-    say(`(${range.length} commits squashed into ${V.commits[id].sha}; the originals are strays now)`);
+    say(`# ${range.length} commits squashed into ${V.commits[id].sha}; the originals are strays now`);
     const packets=range.map((src,i)=>({from:src,to:id,label:V.commits[src].msg.slice(0,18),win:[.15+i*.25,.95+i*.25]}));
     const dur=.95+(range.length-1)*.25;
     pushStep({t:'git rebase -i '+(baseTok||''),
@@ -403,7 +403,7 @@ function cmdRebase(args,line){
   });
   repo.branches[repo.head.on]=tip;
   const dur=1.05+(range.length-1)*.35;
-  say(`Successfully rebased and updated refs/heads/${repo.head.on}.\n(${range.length} commit${range.length>1?'s':''} replayed as new copies; the originals are strays now)`);
+  say(`Successfully rebased and updated refs/heads/${repo.head.on}.\n# ${range.length} commit${range.length>1?'s':''} replayed as new copies; the originals are strays now`);
   pushStep({t:'git rebase '+(args[0]==='--onto'?'--onto '+baseTok:baseTok),
     lede:`${range.length} commit${range.length>1?'s':''} replayed onto ${V.commits[base].code} as new copies. The originals never moved.`,
     anim:{packets,appear,refWin:{[repo.head.on]:[dur+.4,dur+1],HEAD:[dur+.4,dur+1]}}});
@@ -417,7 +417,7 @@ function cmdCherryPick(args,line){
   const parent=headTarget();
   const id=newCommit({msg:V.commits[id0].msg,parents:[parent],fam:'peach',code:V.commits[id0].code+'′',copyOf:id0});
   if(repo.head.on)repo.branches[repo.head.on]=id; else repo.head.at=id;
-  say(`[${repo.head.on||'detached HEAD'} ${V.commits[id].sha}] ${V.commits[id].msg}\n(same patch as ${V.commits[id0].sha}, new hash)`);
+  say(`[${repo.head.on||'detached HEAD'} ${V.commits[id].sha}] ${V.commits[id].msg}\n# same patch as ${V.commits[id0].sha}, new hash`);
   pushStep({t:'git cherry-pick '+args[0],lede:`${V.commits[id0].code}'s changes, replayed here as ${V.commits[id].code}. The original didn't move.`,
     anim:{packet:{from:id0,to:id,label:'changes in '+V.commits[id0].code,win:[.15,1.05]},appear:{[id]:[.95,1.55]},
           refWin:{[repo.head.on||'HEAD']:[1.5,2.1],HEAD:[1.5,2.1]}}});
@@ -434,7 +434,7 @@ function cmdReset(args,line){
   snap(line);
   const path=chainBetween(target,from); // walking backwards, if it is backwards
   repo.branches[repo.head.on]=target;
-  say(`HEAD is now at ${V.commits[target].sha} ${V.commits[target].msg}\n(${mode}: the graph move is identical; flags only decide what happens to files)`);
+  say(`HEAD is now at ${V.commits[target].sha} ${V.commits[target].msg}\n# ${mode}: the graph move is identical; flags only decide what happens to files`);
   pushStep({t:'git reset '+mode,lede:`${repo.head.on} re-points to ${V.commits[target].code}, and abandoned commits become strays.`,
     anim:path?{refPath:{[repo.head.on]:[...path].reverse(),HEAD:[...path].reverse()},refWin:{[repo.head.on]:[.15,1.2],HEAD:[.15,1.2]}}
              :{refWin:{[repo.head.on]:[.15,.9],HEAD:[.15,.9]}}});
@@ -447,9 +447,9 @@ function cmdRevert(args,line){
   if(!repo.head.on){sayErr('sandbox: revert while detached; switch to a branch first');return;}
   snap(line);
   const parent=headTarget();
-  const id=newCommit({msg:`revert "${V.commits[id0].msg}"`,parents:[parent],fam:'sage'});
+  const id=newCommit({msg:`Revert "${V.commits[id0].msg}"`,parents:[parent],fam:'sage'});
   repo.branches[repo.head.on]=id;
-  say(`[${repo.head.on} ${V.commits[id].sha}] revert "${V.commits[id0].msg}"\n(an inverse commit, nothing rewound; see revert)`);
+  say(`[${repo.head.on} ${V.commits[id].sha}] Revert "${V.commits[id0].msg}"\n# an inverse commit, nothing rewound; see revert`);
   pushStep({t:'git revert '+args[0],lede:`${V.commits[id].code} undoes ${V.commits[id0].code} by adding its inverse. History keeps both.`,
     anim:{packet:{from:id0,to:id,label:'inverse of '+V.commits[id0].code,win:[.15,1.05]},appear:{[id]:[.95,1.55]},
           refWin:{[repo.head.on]:[1.5,2.1],HEAD:[1.5,2.1]}}});
@@ -490,7 +490,7 @@ function cmdTag(args,line){
   if(!at){sayErr(`fatal: not a valid object name: '${args[1]}'`);return;}
   snap(line);
   repo.tags[name]=at;
-  say(`tag '${name}' -> ${V.commits[at].sha}`);
+  say(`# tag '${name}' -> ${V.commits[at].sha} (real git prints nothing here)`);
   pushStep({t:'git tag '+name,lede:`A tag is a ref that never moves: ${name} points at ${V.commits[at].code} until you delete it.`,
     anim:{refWin:{[name]:[.15,.7]}}});
 }
@@ -553,7 +553,7 @@ function cmdTeammate(args,line){
 function cmdFetch(args,line){
   if(!repo.remote){sayErr('no remote yet; git remote add origin first');return;}
   const rb=rbName(), tk=trackKey();
-  if(!repo.unfetched.length&&repo.tracking[tk]===repo.remote[rb]){say('Already up to date.');return;}
+  if(!repo.unfetched.length&&repo.tracking[tk]===repo.remote[rb]){say('# up to date; real fetch prints nothing when there is nothing new');return;}
   snap(line);
   const arrived=[...repo.unfetched];
   const old=repo.tracking[tk];
@@ -561,7 +561,7 @@ function cmdFetch(args,line){
   repo.tracking[tk]=repo.remote[rb];
   const appear={}; arrived.forEach((id,i)=>appear[id]=[.15+i*.3,.75+i*.3]);
   const path=chainBetween(old,repo.remote[rb]);
-  say(`From origin (simulated)\n   ${V.commits[old].sha}..${V.commits[repo.remote[rb]].sha}  ${rb} -> origin/${rb}`);
+  say(`From origin\n   ${V.commits[old].sha}..${V.commits[repo.remote[rb]].sha}  ${rb} -> origin/${rb}`);
   say('# your branch did not move. neither did your files. fetch never touches them');
   pushStep({t:'git fetch',
     lede:`${arrived.length} commit${arrived.length===1?'':'s'} arrive, and only the bookmark moves.`,
@@ -578,8 +578,8 @@ function cmdPush(args,line){
   if(local===remoteTip&&!repo.unfetched.length){say('Everything up-to-date');return;}
   const behindOrDiverged=repo.unfetched.length>0||!isAncestor(remoteTip,local);
   if(behindOrDiverged&&!force){
-    sayErr(`! [rejected]  ${rb} -> ${rb} (non-fast-forward)`);
-    sayErr('hint: the remote has work you do not have. fetch, integrate, then push.');
+    sayErr(`! [rejected]        ${rb} -> ${rb} (non-fast-forward)\nerror: failed to push some refs to 'origin'`);
+    sayErr("hint: Updates were rejected because a pushed branch tip is behind its remote\nhint: counterpart. If you want to integrate the remote changes, use 'git pull'\nhint: before pushing again.");
     return;
   }
   snap(line);
@@ -587,10 +587,10 @@ function cmdPush(args,line){
     // force: whatever origin had beyond your history is simply gone
     repo.limbo.push(...repo.unfetched);
     repo.unfetched=[];
-    say(`+ ${V.commits[remoteTip].sha}...${V.commits[local].sha} ${rb} -> ${rb} (forced update)`);
+    say(`To origin\n + ${V.commits[remoteTip].sha}...${V.commits[local].sha} ${rb} -> ${rb} (forced update)`);
     say("# anything origin had that you didn't is gone. this is why force-pushing shared branches ends friendships");
   }else{
-    say(`   ${V.commits[remoteTip].sha}..${V.commits[local].sha}  ${rb} -> ${rb}`);
+    say(`To origin\n   ${V.commits[remoteTip].sha}..${V.commits[local].sha}  ${rb} -> ${rb}`);
   }
   const old=repo.tracking[tk];
   repo.remote[rb]=local;
@@ -638,15 +638,15 @@ function cmdPull(args,line){
     });
     repo.branches[rb]=tip;
     const dur=1.05+(range.length-1)*.35;
-    say(`Successfully rebased ${range.length} commit${range.length===1?'':'s'} onto origin/${rb}.`);
+    say(`Successfully rebased and updated refs/heads/${rb}.\n# ${range.length} commit${range.length===1?'':'s'} replayed as new copies`);
     pushStep({t:'git pull --rebase',
       lede:'Your commits replay on top of what arrived: linear history, new hashes.',
       anim:{packets,appear,refWin:{[rb]:[dur+.4,dur+1],HEAD:[dur+.4,dur+1]}}});
     return;
   }
-  const id=newCommit({msg:`merge origin/${rb}`,parents:[local,target],fam:'sage'});
+  const id=newCommit({msg:`Merge branch '${rb}' of origin`,parents:[local,target],fam:'sage'});
   repo.branches[rb]=id;
-  say(`Merge made by the 'ort' strategy. (no files, no conflicts here)`);
+  say(`Merge made by the 'ort' strategy.\n# no files, no conflicts here`);
   pushStep({t:'git pull',
     lede:'What arrived merges into your line: one new commit, two parents.',
     anim:{packets:[{from:local,to:id,label:'yours',win:[.15,1.05]},{from:target,to:id,label:'theirs',win:[.35,1.25]}],

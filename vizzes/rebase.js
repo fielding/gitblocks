@@ -132,7 +132,7 @@ $ git symbolic-ref HEAD refs/heads/feature</pre>`,
   story:`<p>No ref points at them, so they vanish from <code>git log</code>. The reflog remembers them for 30 days by default, and <code>git branch rescue f3c56aa</code> would resurrect them any time before then. <mark>Rebase never edits or deletes old commits</mark>, it strands them.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog feature
-7d20c4b feature@{0}: rebase (finish)
+7d20c4b feature@{0}: rebase (finish): refs/heads/feature onto d40b91c
 f3c56aa feature@{1}: commit: add sessions   # still here</pre>`,
   present:[...BASE,'F1p','F2p'], dim:[], ghost:['F1','F2'], halo:[], notes:{},
   refs:{main:'M2', feature:'F2p', head:{on:'feature'}},

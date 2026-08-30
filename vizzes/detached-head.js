@@ -23,12 +23,12 @@ steps:[
 
 { t:'Visiting the past',
   lede:'HEAD moves to B, alone. main stays where it was.',
-  story:`<p>This is the state git warns you about in scary all-caps, and all it means is that <mark>HEAD points at a commit instead of a branch</mark>. Nothing is broken. You've stepped off the timeline to look around.</p>`,
+  story:`<p>This is the state behind git's famous warning, and all it means is that <mark>HEAD points at a commit instead of a branch</mark>. Nothing is broken. You've stepped off the timeline to look around.</p>`,
   cmd:'$ git switch --detach b7a41d2',
-  plumbing:`<pre>You are in 'detached HEAD' state. You can look around, make
-experimental changes and commit them...
-# git's scariest message, translated:
-#   "no branch will follow you here"</pre>`,
+  plumbing:`<pre>HEAD is now at b7a41d2 add config
+# (git checkout b7a41d2 prints the famous longer warning:
+#  "You are in 'detached HEAD' state…")
+# translated: no branch will follow you here</pre>`,
   present:['A','B','M1','M2'], dim:[], ghost:[], halo:[], notes:{B:'you are here'},
   refs:{main:'M2', head:{at:'B'}},
   refWin:{HEAD:[.15,.95]},
@@ -55,9 +55,12 @@ experimental changes and commit them...
   lede:'A branch is born at E1 and HEAD attaches to it. The work is safe.',
   story:`<p>If you'd switched back to main first, E1 would've become a stray the moment HEAD left (findable in the reflog, invisible everywhere else). <mark>One cheap pointer makes the work permanent</mark>.</p>`,
   cmd:'$ git switch -c experiment',
-  plumbing:`<pre># forgot, and already left? the reflog has you:
+  plumbing:`<pre># leave without naming it and git itself warns:
+#   Warning: you are leaving 1 commit behind, not
+#   connected to any of your branches
+# already gone? the reflog has you:
 $ git reflog | head -2
-d40b91c HEAD@{0}: checkout: moving to main
+d40b91c HEAD@{0}: checkout: moving from a77c3d9… to main
 a77c3d9 HEAD@{1}: commit: try an idea
 $ git branch experiment a77c3d9</pre>`,
   present:['A','B','M1','M2','E1'], dim:[], ghost:[], halo:[], notes:{},

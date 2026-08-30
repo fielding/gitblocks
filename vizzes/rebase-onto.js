@@ -53,8 +53,9 @@ steps:[
   story:`<p>The same epilogue as every rebase: no ref reaches the originals now, and the reflog remembers them for 30 days by default. api still holds P1, so <mark>deleting that branch takes its dead end along</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git branch -d api
-error: not fully merged      # right: it never landed
-$ git branch -D api          # goodbye, sketch</pre>`,
+error: the branch 'api' is not fully merged
+$ git branch -D api          # you know it never landed
+Deleted branch api (was e21a9c4).</pre>`,
   present:['A','B','M1','P1','Q1','Q2','Q1p','Q2p'], dim:[], ghost:['Q1','Q2'], halo:[], notes:{},
   refs:{main:'M1', api:'P1', oauth:'Q2p', head:{on:'oauth'}},
   refWin:{oauth:[.15,.85], HEAD:[.85,1.45]},

@@ -17,7 +17,7 @@ commits:{
 steps:[
 { t:'The PR is ready',
   lede:'The same divergence as merge, except you want main to gain exactly one commit.',
-  story:`<p>This is GitHub's default <em>“Squash and merge”</em> button. feature's commit-by-commit history mattered while you worked, but main doesn't need it. <mark>Squash keeps the changes and drops the history</mark>.</p>`,
+  story:`<p>This is GitHub's <em>“Squash and merge”</em> button. feature's commit-by-commit history mattered while you worked, but main doesn't need it. <mark>Squash keeps the changes and drops the history</mark>.</p>`,
   sub:'tags float above the commit they point to',
   cmd:null, plumbing:null,
   present:ALL, dim:[], ghost:[], halo:[], notes:{B:'fork point'},
@@ -28,7 +28,9 @@ steps:[
   lede:'Apply everything feature did, as one plain working-tree change.',
   story:`<p>Unlike a real <a href="merge.html">merge</a>, this plans an ordinary commit with <mark>one parent and no link to feature</mark>. The second command is yours to run, because squash only stages the changes.</p>`,
   cmd:'$ git merge --squash feature\n$ git commit -m "add login + sessions (#42)"',
-  plumbing:`<pre># = apply diff b7a41d2..f3c56aa to the tree, stage it
+  plumbing:`<pre>Squash commit -- not updating HEAD
+Automatic merge went well; stopped before committing as requested
+# = apply diff b7a41d2..f3c56aa to the tree, stage it
 # no merge state, no second parent, no record of feature</pre>`,
   sub:'faint dashed outline = where the squash commit will land',
   present:ALL, dim:[], ghost:[], halo:['F1','F2'], notes:{B:'fork point'},
@@ -52,7 +54,9 @@ steps:[
   cmd:null,
   plumbing:`<pre>$ git branch -d feature
 error: the branch 'feature' is not fully merged
-$ git branch -D feature    # you know it landed as 8f31b6d</pre>`,
+hint: If you are sure you want to delete it, run 'git branch -D feature'
+$ git branch -D feature      # you are sure: it landed as 8f31b6d
+Deleted branch feature (was f3c56aa).</pre>`,
   present:[...ALL,'S'], dim:['F1','F2'], ghost:[], halo:[], notes:{},
   refs:{main:'S', feature:'F2', head:{on:'main'}} },
 

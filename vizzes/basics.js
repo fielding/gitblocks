@@ -23,12 +23,15 @@ steps:[
 
 { t:'Committing moves your branch',
   lede:'B lands, and main slides forward to it on its own.',
-  story:`<p>While HEAD is attached, every commit you make means <mark>the branch you're on moves with you</mark>. Nobody ever moves main by hand. Committing is what moves it.</p>`,
+  story:`<p>While HEAD is attached, every commit you make means <mark>the branch you're on moves with you</mark>. You didn't move main yourself. The commit did.</p>`,
   cmd:'$ git commit -m "add config"',
-  plumbing:`<pre># a commit object is tiny:
-tree    …snapshot of all files…
-parent  a1f0c3e
-message add config</pre>`,
+  plumbing:`<pre>$ git cat-file -p HEAD
+tree 2c7e50d…       # the snapshot
+parent a1f0c3e      # the arrow
+author you …
+committer you …
+
+add config</pre>`,
   present:['A','B'], dim:[], ghost:[], halo:[], notes:{},
   refs:{main:'B', head:{on:'main'}},
   appear:{B:[.1,.7]},
