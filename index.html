@@ -18,9 +18,10 @@
   .home .ru{font-size:12px;color:var(--ink-2);max-width:58ch;line-height:1.6}
   .home .ru a{color:var(--ink)}
   .home h2{font-family:var(--serif);font-weight:400;font-size:19px;margin:44px 0 14px;padding-top:20px;border-top:1px solid var(--rule)}
-  .key{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
-  .key .k{display:flex;gap:12px;align-items:flex-start;background:var(--face);border:1px solid var(--rule);border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.5}
-  .key .k svg{flex:none;margin-top:2px}
+  .key{display:flex;flex-direction:column}
+  .key .k{display:flex;gap:16px;align-items:flex-start;padding:11px 2px;border-bottom:1px dashed var(--rule);font-size:12.5px;line-height:1.6}
+  .key .k:last-child{border-bottom:none}
+  .ki{flex:none;width:46px;display:flex;justify-content:center;padding-top:2px}
   .key .k b{font-family:var(--serif);font-weight:400}
   .path{list-style:none;padding:0;margin:0;counter-reset:p}
   .path li{counter-increment:p;display:flex;gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--rule);font-size:13.5px}
@@ -73,11 +74,11 @@
 
   <h2>How to read the blocks</h2>
   <div class="key">
-    <div class="k"><span data-cube="paper"></span><span><b>Blocks are commits.</b> They never move, because they can't: a commit's id is a hash of everything in it, parents included. Git never edits a commit, it only writes new ones.</span></div>
-    <div class="k"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg><span><b>Tags are refs,</b> git's own word for them. A branch is a movable pointer to one commit, nothing more. The red one, HEAD, is whatever you have checked out.</span></div>
-    <div class="k"><svg width="30" height="28"><line x1="15" y1="14" x2="15" y2="24" stroke="#8A6740" stroke-width="3.5" stroke-linecap="round"/><rect x="11" y="4" width="8" height="9" rx="1.5" fill="#D92F1F" stroke="#30231E" stroke-width=".8"/></svg><span><b>The torch is a change in flight:</b> one commit's diff being replayed somewhere new. Rebase, cherry-pick, and revert are all this move.</span></div>
-    <div class="k"><span data-ghost></span><span><b>Dashed means not quite here.</b> Faint sketches are where new commits will land. Ghosts are abandoned commits the reflog still remembers.</span></div>
-    <div class="k"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg><span><b>Wires point at parents.</b> A commit records the id of each parent (a merge has two) and nothing about its children. <code>git log</code> is a walk from HEAD, backwards along the wires.</span></div>
+    <div class="k"><span class="ki"><span data-cube="paper"></span></span><span><b>Blocks are commits.</b> They never move, because they can't: a commit's id is a hash of everything in it, parents included. Git never edits a commit, it only writes new ones.</span></div>
+    <div class="k"><span class="ki"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg></span><span><b>Tags are refs,</b> git's own word for them. A branch is a movable pointer to one commit, nothing more. The red one, HEAD, is whatever you have checked out.</span></div>
+    <div class="k"><span class="ki"><svg width="30" height="28"><line x1="15" y1="14" x2="15" y2="24" stroke="#8A6740" stroke-width="3.5" stroke-linecap="round"/><rect x="11" y="4" width="8" height="9" rx="1.5" fill="#D92F1F" stroke="#30231E" stroke-width=".8"/></svg></span><span><b>The torch is a change in flight:</b> one commit's diff being replayed somewhere new. Rebase, cherry-pick, and revert are all this move.</span></div>
+    <div class="k"><span class="ki"><span data-ghost></span></span><span><b>Dashed means not quite here.</b> Faint sketches are where new commits will land. Ghosts are abandoned commits the reflog still remembers.</span></div>
+    <div class="k"><span class="ki"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg></span><span><b>Wires point at parents.</b> A commit records the id of each parent (a merge has two) and nothing about its children. <code>git log</code> is a walk from HEAD, backwards along the wires.</span></div>
   </div>
 
   <h2>All the animations</h2>
