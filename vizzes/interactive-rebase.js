@@ -51,7 +51,7 @@ squash 77d05af fix typo
 
 { t:'feature catches up, the mess ghosts out',
   lede:'The pointer jumps, and the wip commits become strays.',
-  story:`<p>The published history will say you wrote it clean on the first try (the reflog knows better, for about 90 days). <mark>Tidy before sharing</mark>. Afterward, the golden rule applies.</p>`,
+  story:`<p>The published history will say you wrote it clean on the first try (the reflog knows better, for 30 days by default). <mark>Tidy before sharing</mark>. Afterward, the golden rule applies.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog feature
 51f3a2b feature@{0}: rebase -i (finish)

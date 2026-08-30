@@ -42,7 +42,7 @@ steps:[
   refWin:{main:[1.5,2.1], HEAD:[1.5,2.1]} },
 
 { t:'The old tip is a stray',
-  lede:'T1 is unreachable. The reflog keeps it for about 90 days.',
+  lede:'T1 is unreachable. The reflog keeps it for 30 days by default.',
   story:`<p>The rule that follows: <mark>never amend a commit you've pushed</mark>. Teammates would hold T1 while you hold T1′, the same split <a href="rebase.html">rebase</a>'s golden rule warns about, one commit big.</p>`,
   cmd:`$ git log --oneline
 3d90f2a (HEAD -> main) add login form

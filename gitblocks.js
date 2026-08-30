@@ -475,7 +475,7 @@ function renderCommitCard(id){
     if(n.copyOf)
       note=`<p>A copy of ${C[n.copyOf].code} (<code>${C[n.copyOf].sha}</code>): identical changes, identical message, but the parent differs, so the hash differs. A commit's id covers its content and its entire history.</p>`;
     else if(st.ghost.includes(id))
-      note=`<p>Unreachable: no branch or tag points here anymore. <code>git log</code> won't show it, the reflog still will (~90 days), then garbage collection removes it.</p>`;
+      note=`<p>Unreachable: no branch or tag points here anymore. <code>git log</code> won't show it, the reflog still will (for 30 days by default), then garbage collection removes it.</p>`;
     else if(!n.parent)
       note=`<p>The root commit, the only one with no parent.</p>`;
   }

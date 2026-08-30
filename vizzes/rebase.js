@@ -129,7 +129,7 @@ $ git symbolic-ref HEAD refs/heads/feature</pre>`,
 
 { t:'The strays',
   lede:'F1 and F2 still exist. No ref can reach them anymore.',
-  story:`<p>No ref points at them, so they vanish from <code>git log</code>. The reflog remembers them for about 90 days, and <code>git branch rescue f3c56aa</code> would resurrect them any time before then. <mark>Rebase never edits or deletes old commits</mark>, it strands them.</p>`,
+  story:`<p>No ref points at them, so they vanish from <code>git log</code>. The reflog remembers them for 30 days by default, and <code>git branch rescue f3c56aa</code> would resurrect them any time before then. <mark>Rebase never edits or deletes old commits</mark>, it strands them.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog feature
 7d20c4b feature@{0}: rebase (finish)

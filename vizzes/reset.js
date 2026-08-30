@@ -45,7 +45,7 @@ $ git reset --hard ORIG_HEAD</pre>`,
 
 { t:'The strays',
   lede:'M1 and M2 are unreachable now, but they haven’t been erased.',
-  story:`<p>The same afterlife <a href="rebase.html">rebase</a> leaves behind: invisible to <code>git log</code>, alive in the reflog for about 90 days. The reflog remembers where every ref has been, which is why <mark>committed work is almost never truly lost</mark>.</p>`,
+  story:`<p>The same afterlife <a href="rebase.html">rebase</a> leaves behind: invisible to <code>git log</code>, alive in the reflog for 30 days by default. The reflog remembers where every ref has been, which is why <mark>committed work is almost never truly lost</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git reflog main
 b7a41d2 main@{0}: reset: moving to b7a41d2
@@ -68,7 +68,7 @@ $ git branch rescue d40b91c   # resurrect any time</pre>`,
 ],
 commitNote(id,st,i){
   if((id==='M1'||id==='M2')&&st.ghost.includes(id))
-    return `<p>Unreachable, not deleted: no ref points here anymore, but the object is intact. <code>git branch rescue ${this.commits[id].sha}</code> brings it back until garbage collection (~90 days).</p>`;
+    return `<p>Unreachable, not deleted: no ref points here anymore, but the object is intact. <code>git branch rescue ${this.commits[id].sha}</code> brings it back until the reflog entry expires (30 days by default).</p>`;
   if(id==='B'&&i>=1)
     return `<p>The reset target. After the move, main says this is the newest thing that ever happened.</p>`;
   return '';

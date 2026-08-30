@@ -50,7 +50,7 @@ steps:[
 
 { t:'oauth catches up, the originals ghost out',
   lede:'The pointer jumps to the copies, and Q1 and Q2 become strays.',
-  story:`<p>The same epilogue as every rebase: no ref reaches the originals now, and the reflog remembers them for about 90 days. api still holds P1, so <mark>deleting that branch takes its dead end along</mark>.</p>`,
+  story:`<p>The same epilogue as every rebase: no ref reaches the originals now, and the reflog remembers them for 30 days by default. api still holds P1, so <mark>deleting that branch takes its dead end along</mark>.</p>`,
   cmd:null,
   plumbing:`<pre>$ git branch -d api
 error: not fully merged      # right: it never landed
