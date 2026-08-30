@@ -74,11 +74,11 @@
 
   <h2>How to read the blocks</h2>
   <div class="key">
-    <div class="k"><span data-cube="paper"></span><span><b>Blocks are commits.</b> They never move. Every command that looks like it moves commits is secretly making copies, and the animations show the copies being made.</span></div>
-    <div class="k"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg><span><b>Tags are refs.</b> A branch is a name pointing at one commit, nothing more. The red one, HEAD, is where you're standing.</span></div>
+    <div class="k"><span data-cube="paper"></span><span><b>Blocks are commits.</b> They never move. When history looks like it moved, either a tag slid to a different block or a new copy was built, and the animation shows which.</span></div>
+    <div class="k"><svg width="34" height="26"><rect x="1" y="5" width="32" height="15" rx="2" fill="#F5F1EA" stroke="#30231E" stroke-width="1.2"/><text x="17" y="16" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="8" font-weight="600" fill="#30231E">main</text></svg><span><b>Tags are names.</b> A branch is a name pointing at one commit, nothing more. The red one, HEAD, is where you're standing.</span></div>
     <div class="k"><svg width="30" height="28"><line x1="15" y1="14" x2="15" y2="24" stroke="#8A6740" stroke-width="3.5" stroke-linecap="round"/><rect x="11" y="4" width="8" height="9" rx="1.5" fill="#D92F1F" stroke="#30231E" stroke-width=".8"/></svg><span><b>The torch is a change in flight:</b> one commit's diff being replayed somewhere new. Rebase, cherry-pick, and revert are all this move.</span></div>
     <div class="k"><span data-ghost></span><span><b>Dashed means not quite here.</b> Faint sketches are where new commits will land. Ghosts are abandoned commits the reflog still remembers.</span></div>
-    <div class="k"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg><span><b>Wires point at parents.</b> History is walked backwards. A commit knows where it came from and nothing else.</span></div>
+    <div class="k"><svg width="40" height="20"><line x1="2" y1="10" x2="30" y2="10" stroke="#611D1D" stroke-width="4.5" stroke-linecap="round"/><polygon points="38,10 28,5 28,15" fill="#611D1D"/></svg><span><b>Wires point at parents.</b> A commit stores its parent's id and knows nothing about its children, so git reads history from where you stand, following the wires back.</span></div>
   </div>
 
   <h2>All the animations</h2>
