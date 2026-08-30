@@ -3,8 +3,8 @@
 **git, block by block**: animated, isometric walkthroughs of what git commands
 *actually* do, plus a live sandbox where you type the commands yourself.
 
-**Live: [git.redstone.university](https://git.redstone.university)** · a
-[Redstone University](https://redstone.university) companion.
+**Live: [git.redstone.university](https://git.redstone.university)** · blocks
+borrowed from [Redstone University](https://redstone.university).
 
 ![git rebase, mid-replay](og/rebase.png)
 
