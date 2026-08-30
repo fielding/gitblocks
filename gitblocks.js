@@ -17,7 +17,7 @@ const shade=c=>({t:mixhex(c,'#ffffff',.30),l:mixhex(c,'#000000',.06),r:mixhex(c,
 /* every animation in the series; `on` is decided per page from VIZ.meta.name */
 const SERIES=[
   {group:'start here', name:'basics',     file:'basics.html',     fam:'paper', doc:'Commits & Branches'},
-  {group:'start here', name:'playground', file:'playground.html', fam:'red',   doc:'The Sandbox'},
+  {group:'start here', name:'playground', label:'sandbox', file:'playground.html', fam:'red',   doc:'The Sandbox'},
   {group:'rewriting', name:'rebase',             file:'rebase.html',             fam:'rose',  doc:'Rebase, Replayed'},
   {group:'rewriting', name:'interactive-rebase', file:'interactive-rebase.html', fam:'rose',  doc:'Interactive Rebase, Tidied'},
   {group:'rewriting', name:'rebase-onto',        file:'rebase-onto.html',        fam:'rose',  doc:'Rebase --onto, Transplanted'},
@@ -131,7 +131,7 @@ function skeleton(meta){
     <div id="legend" aria-hidden="true"></div>
     <div id="tip"></div>
   </div>
-  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc(meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
+  <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc((SERIES.find(x=>x.name===meta.name)||{}).label||meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
   <footer id="foot">every animation on this page embeds anywhere: append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it. · blocks borrowed from <a href="https://redstone.university">redstone.university</a></footer>
 </div>`;
@@ -727,7 +727,7 @@ document.getElementById('legend').innerHTML=(VIZ.legend||[])
 const vizrow=document.getElementById('vizrow');
 const chip=v=>{
   const on=v.name===VIZ.meta.name;
-  return `<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.name}</span></a>`;
+  return `<a class="nv${on?' on':''}" href="${v.file}" data-name="${v.name}"${on?' aria-current="page"':''}>${cubeSvg(FAM[v.fam],17)}<span>${v.label||v.name}</span></a>`;
 };
 const groups=[];
 for(const v of SERIES){
