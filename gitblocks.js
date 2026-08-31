@@ -133,7 +133,7 @@ function skeleton(meta){
   </div>
   <section id="term"><div id="tbar"><span class="td" style="background:#e7349c"></span><span class="td" style="background:#f2a633"></span><span class="td" style="background:#04b372"></span><span class="tt">git · ${esc((SERIES.find(x=>x.name===meta.name)||{}).label||meta.name)}</span>${meta.name==='playground'?'':'<a class="tgo" href="playground.html">try these yourself ⤳</a>'}</div><div id="tlog"></div></section>
   <section id="panel"><div id="body"></div></section>
-  <footer id="foot">every animation on this page embeds anywhere: append <code>?embed</code> (and optionally <code>&amp;step=N</code>) to its url and iframe it. · blocks borrowed from <a href="https://redstone.university">redstone.university</a></footer>
+  <footer id="foot">every animation on this page embeds anywhere: append <code>?embed</code> to its url and iframe it. <code>&amp;step=N</code> picks a step, <code>&amp;noplay</code> freezes it, <code>&amp;label=branch:text</code> pins a caption. · blocks borrowed from <a href="https://redstone.university">redstone.university</a></footer>
 </div>`;
 }
 
