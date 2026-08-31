@@ -53,6 +53,10 @@ URLs are the product:
 
 - `?step=N` deep-links a step; the address bar tracks where you are
 - `?embed` strips the chrome for iframes; `&loop` makes it play itself
+- `?noplay` turns autoplay off, so `?embed&step=5&noplay` is a frozen single frame
+- `?label=<target>:<text>` pins an extra caption under a block. The target can be a
+  branch or tag name (the caption follows the ref as it moves), a commit code like
+  `F2`, or a sha prefix. Repeatable: `&label=feature:you are here&label=main:their work`
 
 ```html
 <iframe src="https://git.redstone.university/rebase?embed&step=7"

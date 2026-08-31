@@ -154,6 +154,18 @@ const topC=id=>{const n=C[id];return P(n.gx+W/2,n.gy+D/2,H);};
 /* ================= STATE ================= */
 const Q=new URLSearchParams(location.search);
 const EMBED=Q.has('embed');
+// ?label=<target>:<text> pins an extra note; target = ref name (follows the ref), commit code, or sha prefix
+const XNOTES=Q.getAll('label').map(v=>{const i=v.indexOf(':');return i>0?[v.slice(0,i).trim(),v.slice(i+1,i+29)]:null;}).filter(Boolean);
+function xnote(id,st){
+  for(const [tgt,txt] of XNOTES){
+    let t=null; const r=st.refs&&st.refs[tgt];
+    if(typeof r==='string')t=r;
+    else if(C[tgt])t=tgt;
+    else{const k=Object.keys(C).find(k=>C[k].code===tgt||(C[k].sha&&C[k].sha.startsWith(tgt.toLowerCase())));if(k)t=k;}
+    if(t===id)return txt;
+  }
+  return null;
+}
 const S={i:0,sel:null,selRef:null,hover:null,hoverRef:null,auto:false,loop:false,tx:0,ty:0,k:1};
 let stepT0=performance.now(), firstBoot=true;
 const svg=document.getElementById('svg'), world=document.getElementById('world'),
@@ -313,9 +325,10 @@ function drawLabel(id,v,st){
   g.appendChild(el('rect',{x:b[0]-w/2,y,width:w,height:14,fill:sel?INK:PAPER_B,stroke:dim?MUTED:INK,'stroke-width':.9,'stroke-dasharray':dim?'3 2':'none'}));
   const t=el('text',{x:b[0],y:y+10.8,'text-anchor':'middle','font-size':'10','font-family':'var(--mono)','letter-spacing':'.04em',fill:sel?PAPER_B:(dim?MUTED:INK),'font-weight':'500'});
   t.textContent=txt; g.appendChild(t);
-  if(st.notes[id]){
+  const noteTxt=st.notes[id]||(XNOTES.length?xnote(id,st):null);
+  if(noteTxt){
     const nt=el('text',{x:b[0],y:y+26,'text-anchor':'middle','font-size':'9.5','font-family':'var(--mono)','letter-spacing':'.1em',fill:tinted?'var(--rose)':'var(--ink-2)','font-weight':tinted?'600':'400'});
-    nt.textContent=st.notes[id].toUpperCase(); g.appendChild(nt);
+    nt.textContent=noteTxt.toUpperCase(); g.appendChild(nt);
   }
   return g;
 }
