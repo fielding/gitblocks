@@ -403,7 +403,7 @@ function cmdRebase(args,line){
   });
   repo.branches[repo.head.on]=tip;
   const dur=1.05+(range.length-1)*.35;
-  say(`Successfully rebased and updated refs/heads/${repo.head.on}.\n# ${range.length} commit${range.length>1?'s':''} replayed as new copies; the originals are strays now`);
+  say(`Successfully rebased and updated refs/heads/${repo.head.on}.\n# ${range.length===1?'1 commit replayed as a new copy; the original is a stray now':range.length+' commits replayed as new copies; the originals are strays now'}`);
   pushStep({t:'git rebase '+(args[0]==='--onto'?'--onto '+baseTok:baseTok),
     lede:`${range.length} commit${range.length>1?'s':''} replayed onto ${V.commits[base].code} as new copies. The originals never moved.`,
     anim:{packets,appear,refWin:{[repo.head.on]:[dur+.4,dur+1],HEAD:[dur+.4,dur+1]}}});
@@ -638,7 +638,7 @@ function cmdPull(args,line){
     });
     repo.branches[rb]=tip;
     const dur=1.05+(range.length-1)*.35;
-    say(`Successfully rebased and updated refs/heads/${rb}.\n# ${range.length} commit${range.length===1?'':'s'} replayed as new copies`);
+    say(`Successfully rebased and updated refs/heads/${rb}.\n# ${range.length===1?'1 commit replayed as a new copy':range.length+' commits replayed as new copies'}`);
     pushStep({t:'git pull --rebase',
       lede:'Your commits replay on top of what arrived: linear history, new hashes.',
       anim:{packets,appear,refWin:{[rb]:[dur+.4,dur+1],HEAD:[dur+.4,dur+1]}}});
