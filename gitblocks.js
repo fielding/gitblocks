@@ -45,8 +45,10 @@ function loadVizData(name){
     if(VIZ_REG[name])return;
     const res=await fetch('vizzes/'+name+'.js');
     if(!res.ok)throw new Error('fetch '+name);
+    const prev=window.VIZ;
     (0,eval)(await res.text());
     VIZ_REG[name]=window.VIZ;
+    window.VIZ=prev; // prefetch must not clobber the page's live VIZ
   });
   return loadChain.then(()=>VIZ_REG[name]);
 }
@@ -60,6 +62,7 @@ async function switchViz(name,href,push){
     const s=SERIES.find(x=>x.name===name);
     if(s&&s.doc)document.title=s.doc;
     window.scrollTo(0,0);
+    window.VIZ=data;
     boot(data);
   }catch(e){location.href=href;}
 }
