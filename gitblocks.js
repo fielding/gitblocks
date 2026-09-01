@@ -768,6 +768,7 @@ if(location.protocol!=='file:'){
 /* ================= BOOT ================= */
 if(EMBED){
   document.body.classList.add('embed');
+  if(Q.has('term'))document.body.classList.add('showterm');
   document.getElementById('econtrols').innerHTML=
     `<button class="ctl" id="ebk" aria-label="Back">◂</button>`+
     `<button class="ctl" id="enx" aria-label="Next">▸</button>`+

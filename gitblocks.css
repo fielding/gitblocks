@@ -139,6 +139,9 @@ a.bt:hover{text-decoration:underline;text-decoration-thickness:1px;text-underlin
 #tin{flex:1;background:none;border:none;outline:none;font:inherit;font-size:12.5px;color:#F5F1EA;caret-color:#f2a633;min-width:0}
 #tin::placeholder{color:#7A7466}
 body.embed #term{display:none}
+body.embed.showterm #term{display:block;margin:0;border-radius:0;border-left:none;border-right:none;border-bottom:none}
+body.embed.showterm #canvasWrap{height:calc(100vh - 196px)}
+body.embed.showterm #tlog{min-height:120px;max-height:150px}
 .tgo{color:#5e84b6;text-decoration:none;font-size:12px}
 .tgo:hover{color:#458ae2;text-decoration:underline;text-underline-offset:3px}
 #tshare{margin-left:auto;flex:none;background:#232322;color:#CFC8B8;border:1px solid #454542;border-radius:6px}
