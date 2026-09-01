@@ -529,6 +529,7 @@ function cmdRemote(args,line){
     repo.tracking={[trackKey()]:repo.branches[repo.remoteBranch]};
     say(`origin now mirrors ${repo.remoteBranch} at ${V.commits[repo.branches[repo.remoteBranch]].sha}`);
     say('# the dashed origin/'+repo.remoteBranch+' tag is your BOOKMARK of the server, not the server');
+    say('# (real git has no origin/'+repo.remoteBranch+' until you push -u or fetch; the sandbox skips ahead)');
     pushStep({t:'git remote add origin',
       lede:`origin/${repo.remoteBranch} appears: your last known position of the server.`,
       anim:{refWin:{[trackKey()]:[.15,.7]}}});
