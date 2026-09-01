@@ -693,7 +693,7 @@ function run(line){
     window.gotoStep(V.steps.length-1);
     return;
   }
-  if(c0!=='git'&&c0!=='g'){sayErr(`${c0}: command not found (this terminal only speaks git; try 'help')`);return;}
+  if(c0!=='git'&&c0!=='g'){sayErr(`${c0.length>40?c0.slice(0,40)+'…':c0}: command not found (this terminal only speaks git; try 'help')`);return;}
   curLine=line; outBuf=[];
   const ALIAS={c:'commit',co:'checkout',l:'log',s:'status',sw:'switch',br:'branch',cp:'cherry-pick'};
   const sub=ALIAS[argv[1]]||argv[1], rest=argv.slice(2);
